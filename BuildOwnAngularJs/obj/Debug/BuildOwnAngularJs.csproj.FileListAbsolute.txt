@@ -1,0 +1,9 @@
+C:\Users\dauh\Documents\Visual Studio 2012\Projects\BuildOwnAngularJs\BuildOwnAngularJs\bin\BuildOwnAngularJs.dll
+C:\Users\dauh\Documents\Visual Studio 2012\Projects\BuildOwnAngularJs\BuildOwnAngularJs\bin\BuildOwnAngularJs.pdb
+C:\Users\dauh\Documents\Visual Studio 2012\Projects\BuildOwnAngularJs\BuildOwnAngularJs\obj\Debug\BuildOwnAngularJs.dll
+C:\Users\dauh\Documents\Visual Studio 2012\Projects\BuildOwnAngularJs\BuildOwnAngularJs\obj\Debug\BuildOwnAngularJs.pdb
+C:\DATA\PRIVATE\buildOwnAngularJS\BuildOwnAngularJs\bin\BuildOwnAngularJs.dll
+C:\DATA\PRIVATE\buildOwnAngularJS\BuildOwnAngularJs\bin\BuildOwnAngularJs.pdb
+C:\DATA\PRIVATE\buildOwnAngularJS\BuildOwnAngularJs\obj\Debug\BuildOwnAngularJs.csprojResolveAssemblyReference.cache
+C:\DATA\PRIVATE\buildOwnAngularJS\BuildOwnAngularJs\obj\Debug\BuildOwnAngularJs.dll
+C:\DATA\PRIVATE\buildOwnAngularJS\BuildOwnAngularJs\obj\Debug\BuildOwnAngularJs.pdb
