@@ -6,6 +6,10 @@ function Scope() {
     
 }
 
+Scope.prototype.$eval = function (expr, locals) {
+    return expr(this, locals);
+};
+
 Scope.prototype.$$areEqual = function (newValue, oldValue, valueEq) {
     if (valueEq) {
         return _.isEqual(newValue, oldValue);
