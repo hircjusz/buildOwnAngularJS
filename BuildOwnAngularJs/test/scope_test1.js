@@ -32,7 +32,7 @@ describe("Scope", function () {
         scope.counter = 0;
         scope.$watch(
         function (obj) { return obj.someValue; },
-        function (newValue, oldValue, scope) { scope.counter++; }
+        function (newValue, oldValue, obj) { obj.counter++; }
         );
         expect(scope.counter).toBe(0);
         scope.$digest();
