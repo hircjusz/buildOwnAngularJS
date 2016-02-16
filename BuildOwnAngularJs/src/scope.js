@@ -219,6 +219,7 @@ Scope.prototype.$new = function() {
     var childScope = function () { };
     childScope.prototype = this;
     var child = new childScope();
+    child.$$watchers = [];
     return child;
 
 };
