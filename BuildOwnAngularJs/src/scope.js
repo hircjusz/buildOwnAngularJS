@@ -213,3 +213,12 @@ Scope.prototype.$beginPhase = function (phase) {
 Scope.prototype.$clearPhase = function () {
     this.$$phase = null;
 };
+
+/*Inheritance*/
+Scope.prototype.$new = function() {
+    var childScope = function () { };
+    childScope.prototype = this;
+    var child = new childScope();
+    return child;
+
+};
