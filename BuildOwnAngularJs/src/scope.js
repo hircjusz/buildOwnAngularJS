@@ -66,7 +66,7 @@ Scope.prototype.$watchGroup = function (watchFns, listenerFn) {
                 listenerFn(newValues, newValues, self);
             }
         });
-        return function() {
+        return function () {
             shouldCall = false;
         };
     }
@@ -92,8 +92,8 @@ Scope.prototype.$watchGroup = function (watchFns, listenerFn) {
         });
     });
 
-    return function() {
-        _.forEach(destoryFunctions, function(destroyFunction) {
+    return function () {
+        _.forEach(destoryFunctions, function (destroyFunction) {
             destroyFunction();
         });
     }
@@ -223,22 +223,26 @@ Scope.prototype.$clearPhase = function () {
 };
 
 /*Inheritance*/
-Scope.prototype.$new = function() {
-    var childScope = function () { };
-    childScope.prototype = this;
-    var child = new childScope();
+Scope.prototype.$new = function (isolated) {
+    var child;
+    if (isolated) {
+        child = new Scope();
+    } else {
+        var childScope = function () { };
+        childScope.prototype = this;
+        child = new childScope();
+    }
     this.$$children.push(child);
     child.$$watchers = [];
     child.$$children = [];
     return child;
-
 };
 
-Scope.prototype.$$everyScope = function(fn) {
+Scope.prototype.$$everyScope = function (fn) {
     if (fn(this)) {
 
         return this.$$children.every(
-            function(child) {
+            function (child) {
                 return child.$$everyScope(fn);
             }
         );
