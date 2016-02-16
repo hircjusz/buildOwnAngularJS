@@ -9,6 +9,7 @@ function Scope() {
     this.$$applyAsyncId = null;
     this.$$postDigestQueue = [];
     this.$$children = [];
+    this.$root = this;
 }
 
 Scope.prototype.$eval = function (expr, locals) {
@@ -195,7 +196,7 @@ Scope.prototype.$apply = function (expr) {
         return this.$eval(expr);
     } finally {
         this.$clearPhase();
-        this.$digest();
+        this.$root.$digest();
     }
 };
 
