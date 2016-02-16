@@ -580,14 +580,14 @@ function (scope) {
             expect(counter).toEqual(1);
         });
 
-        it('uses the same array of old and new values on first run', function() {
+        it('uses the same array of old and new values on first run', function () {
             var gotNewValues, gotOldValues;
             scope.aValue = 1;
             scope.anotherValue = 2;
             scope.$watchGroup([
-            function(scope) { return scope.aValue; },
-            function(scope) { return scope.anotherValue; }
-            ], function(newValues, oldValues, scope) {
+            function (scope) { return scope.aValue; },
+            function (scope) { return scope.anotherValue; }
+            ], function (newValues, oldValues, scope) {
                 gotNewValues = newValues;
                 gotOldValues = oldValues;
             });
@@ -625,14 +625,14 @@ function (scope) {
             expect(gotOldValues).toEqual([]);
         });
 
-        it('can be deregistered', function() {
+        it('can be deregistered', function () {
             var counter = 0;
             scope.aValue = 1;
             scope.anotherValue = 2;
             var destroyGroup = scope.$watchGroup([
-            function(scope) { return scope.aValue; },
-            function(scope) { return scope.anotherValue; }
-            ], function(newValues, oldValues, scope) {
+            function (scope) { return scope.aValue; },
+            function (scope) { return scope.anotherValue; }
+            ], function (newValues, oldValues, scope) {
                 counter++;
             });
             scope.$digest();
@@ -705,7 +705,7 @@ function (scope) {
             expect(child.counter).toBe(2);
         });
 
-        it("can be nested at any depth", function() {
+        it("can be nested at any depth", function () {
             var a = new Scope();
             var aa = a.$new();
             var aaa = aa.$new();
@@ -756,7 +756,7 @@ function (scope) {
             expect(child.aValueWas).toBeUndefined();
         });
 
-        it("keeps a record of its children", function() {
+        it("keeps a record of its children", function () {
             var parent = new Scope();
             var child1 = parent.$new();
             var child2 = parent.$new();
@@ -797,6 +797,25 @@ function (scope) {
             );
             child2.$apply(function (scope) { });
             expect(parent.counter).toBe(1);
+        });
+
+        it("schedules a digest from root on $evalAsync", function (done) {
+            var parent = new Scope();
+            var child = parent.$new();
+            var child2 = child.$new();
+            parent.aValue = 'abc';
+            parent.counter = 0;
+            parent.$watch(
+            function (scope) { return scope.aValue; },
+            function (newValue, oldValue, scope) {
+                scope.counter++;
+            }
+);
+            child2.$evalAsync(function (scope) { });
+            setTimeout(function () {
+                expect(parent.counter).toBe(1);
+                done();
+            }, 50);
         });
 
 
