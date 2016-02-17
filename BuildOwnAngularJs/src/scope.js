@@ -377,14 +377,18 @@ Scope.prototype.$on= function(eventName, listener) {
     listeners.push(listener);
 }
 Scope.prototype.$emit = function (eventName) {
-    this.$$fireEventOnScope(eventName);
+    var additionalArguments = [].slice.call(arguments).splice(1);
+    this.$$fireEventOnScope(eventName, additionalArguments);
 };
 Scope.prototype.$broadcast = function (eventName) {
-    this.$$fireEventOnScope(eventName);
+    var additionalArguments = [].slice.call(arguments).splice(1);
+    this.$$fireEventOnScope(eventName, additionalArguments);
 };
-Scope.prototype.$$fireEventOnScope = function (eventName) {
+Scope.prototype.$$fireEventOnScope = function (eventName, additionalArgs) {
+    var event = { name: eventName };
+    var listenerArgs = [event].concat(additionalArgs);
     var listeners = this.$$listeners[eventName] || [];
     _.forEach(listeners, function (listener) {
-        listener();
+        listener.apply(null, listenerArgs);
     });
 };

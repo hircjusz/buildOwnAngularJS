@@ -888,13 +888,13 @@ function (scope) {
             }, 50);
         });
 
-        it("executes $evalAsync functions on isolated scopes", function(done) {
+        it("executes $evalAsync functions on isolated scopes", function (done) {
             var parent = new Scope();
             var child = parent.$new(true);
-            child.$evalAsync(function(scope) {
+            child.$evalAsync(function (scope) {
                 scope.didEvalAsync = true;
             });
-            setTimeout(function() {
+            setTimeout(function () {
                 expect(child.didEvalAsync).toBe(true);
                 done();
             }, 50);
@@ -910,7 +910,7 @@ function (scope) {
             expect(child.didPostDigest).toBe(true);
         });
 
-        it('can take some other scope as the parent', function() {
+        it('can take some other scope as the parent', function () {
             var prototypeParent = new Scope();
             var hierarchyParent = new Scope();
             var child = prototypeParent.$new(false, hierarchyParent);
@@ -926,14 +926,14 @@ function (scope) {
             expect(child.counter).toBe(2);
         });
 
-        it("is no longer digested when $destroy has been called", function() {
+        it("is no longer digested when $destroy has been called", function () {
             var parent = new Scope();
             var child = parent.$new();
             child.aValue = [1, 2, 3];
             child.counter = 0;
             child.$watch(
-            function(scope) { return scope.aValue; },
-            function(newValue, oldValue, scope) {
+            function (scope) { return scope.aValue; },
+            function (newValue, oldValue, scope) {
                 scope.counter++;
             },
             true
@@ -979,12 +979,12 @@ function (scope) {
             expect(scope.counter).toBe(2);
         });
 
-        it("works like a normal watch for NaNs", function() {
-            scope.aValue = 0/0;
+        it("works like a normal watch for NaNs", function () {
+            scope.aValue = 0 / 0;
             scope.counter = 0;
             scope.$watchCollection(
-            function(scope) { return scope.aValue; },
-            function(newValue, oldValue, scope) {
+            function (scope) { return scope.aValue; },
+            function (newValue, oldValue, scope) {
                 scope.counter++;
             }
             );
@@ -1011,12 +1011,12 @@ function (scope) {
             expect(scope.counter).toBe(2);
         });
 
-        it("notices an item added to an array", function() {
+        it("notices an item added to an array", function () {
             scope.arr = [1, 2, 3];
             scope.counter = 0;
             scope.$watchCollection(
-                function(scope) { return scope.arr; },
-                function(newValue, oldValue, scope) {
+                function (scope) { return scope.arr; },
+                function (newValue, oldValue, scope) {
                     scope.counter++;
                     scope.$digest();
                     expect(scope.counter).toBe(1);
@@ -1027,40 +1027,40 @@ function (scope) {
                     expect(scope.counter).toBe(2);
                 });
         });
-            it("notices an item removed from an array", function() {
-                scope.arr = [1, 2, 3];
-                scope.counter = 0;
-                scope.$watchCollection(
-                function(scope) { return scope.arr; },
-                function(newValue, oldValue, scope) {
-                    scope.counter++;
-                }
-                );
-                scope.$digest();
-                expect(scope.counter).toBe(1);
-                scope.arr.shift();
-                scope.$digest();
-                expect(scope.counter).toBe(2);
-                scope.$digest();
-                expect(scope.counter).toBe(2);
-            });
-            it("notices an item replaced in an array", function() {
-                scope.arr = [1, 2, 3];
-                scope.counter = 0;
-                scope.$watchCollection(
-                function(scope) { return scope.arr; },
-                function(newValue, oldValue, scope) {
-                    scope.counter++;
-                }
-                );
-                scope.$digest();
-                expect(scope.counter).toBe(1);
-                scope.arr[1] = 42;
-                scope.$digest();
-                expect(scope.counter).toBe(2);
-                scope.$digest();
-                expect(scope.counter).toBe(2);
-            });
+        it("notices an item removed from an array", function () {
+            scope.arr = [1, 2, 3];
+            scope.counter = 0;
+            scope.$watchCollection(
+            function (scope) { return scope.arr; },
+            function (newValue, oldValue, scope) {
+                scope.counter++;
+            }
+            );
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+            scope.arr.shift();
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+        });
+        it("notices an item replaced in an array", function () {
+            scope.arr = [1, 2, 3];
+            scope.counter = 0;
+            scope.$watchCollection(
+            function (scope) { return scope.arr; },
+            function (newValue, oldValue, scope) {
+                scope.counter++;
+            }
+            );
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+            scope.arr[1] = 42;
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+        });
         it("notices items reordered in an array", function () {
             scope.arr = [2, 1, 3];
             scope.counter = 0;
@@ -1112,13 +1112,13 @@ function (scope) {
             expect(scope.counter).toBe(2);
         });
 
-        it("notices an item replaced in a NodeList object", function() {
+        it("notices an item replaced in a NodeList object", function () {
             document.documentElement.appendChild(document.createElement('div'));
             scope.arrayLike = document.getElementsByTagName('div');
             scope.counter = 0;
             scope.$watchCollection(
-            function(scope) { return scope.arrayLike; },
-            function(newValue, oldValue, scope) {
+            function (scope) { return scope.arrayLike; },
+            function (newValue, oldValue, scope) {
                 scope.counter++;
             }
             );
@@ -1184,12 +1184,12 @@ function (scope) {
             expect(scope.counter).toBe(2);
         });
 
-        it("does not fail on NaN attributes in objects", function() {
+        it("does not fail on NaN attributes in objects", function () {
             scope.counter = 0;
-            scope.obj = {a: NaN};
+            scope.obj = { a: NaN };
             scope.$watchCollection(
-            function(scope) { return scope.obj; },
-            function(newValue, oldValue, scope) {
+            function (scope) { return scope.obj; },
+            function (newValue, oldValue, scope) {
                 scope.counter++;
             }
             );
@@ -1339,7 +1339,37 @@ function (scope) {
                 expect(listener1).toHaveBeenCalled();
                 expect(listener2).not.toHaveBeenCalled();
             });
+
+            it("passes an event object with a name to listeners on " + method, function () {
+                var listener = jasmine.createSpy();
+                scope.$on('someEvent', listener);
+                scope[method]('someEvent');
+                expect(listener).toHaveBeenCalled();
+                expect(listener.calls.mostRecent().args[0].name).toEqual('someEvent');
+            });
+
+            it("passes the same event object to each listener on " + method, function () {
+                var listener1 = jasmine.createSpy();
+                var listener2 = jasmine.createSpy();
+                scope.$on('someEvent', listener1);
+                scope.$on('someEvent', listener2);
+                scope[method]('someEvent');
+                var event1 = listener1.calls.mostRecent().args[0];
+                var event2 = listener2.calls.mostRecent().args[0];
+                expect(event1).toBe(event2);
+            });
+
+            it("passes additional arguments to listeners on " + method, function () {
+                var listener = jasmine.createSpy();
+                scope.$on('someEvent', listener);
+                scope[method]('someEvent', 'and', ['additional', 'arguments'], '...');
+                expect(listener.calls.mostRecent().args[1]).toEqual('and');
+                expect(listener.calls.mostRecent().args[2]).toEqual(['additional', 'arguments']);
+                expect(listener.calls.mostRecent().args[3]).toEqual('...');
+            });
         });
+
+
 
     });
 
