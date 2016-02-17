@@ -383,25 +383,33 @@ Scope.prototype.$on = function (eventName, listener) {
     }
 }
 Scope.prototype.$emit = function (eventName) {
+    var event = { name: eventName };
     var additionalArguments = [].slice.call(arguments).splice(1);
-    return this.$$fireEventOnScope(eventName, additionalArguments);
+    var listenersArgs = [event].concat(additionalArguments);
+    var scope = this;
+
+    do {
+        scope.$$fireEventOnScope(eventName, listenersArgs);
+        scope = scope.$parent;
+    } while (scope);
+    return event;
 };
 Scope.prototype.$broadcast = function (eventName) {
-    var additionalArguments = [].slice.call(arguments).splice(1);
-    return this.$$fireEventOnScope(eventName, additionalArguments);
-};
-Scope.prototype.$$fireEventOnScope = function (eventName, additionalArgs) {
     var event = { name: eventName };
-    var listenerArgs = [event].concat(additionalArgs);
+    var additionalArguments = [].slice.call(arguments).splice(1);
+    var listenersArgs = [event].concat(additionalArguments);
+    this.$$fireEventOnScope(eventName, listenersArgs);
+    return event;
+};
+Scope.prototype.$$fireEventOnScope = function (eventName, listenersArgs) {
     var listeners = this.$$listeners[eventName] || [];
     var i = 0;
     while (i < listeners.length) {
         if (listeners[i] === null) {
             listeners.splice(i, 1);
         } else {
-            listeners[i].apply(null, listenerArgs);
+            listeners[i].apply(null, listenersArgs);
             i++;
         }
     }
-    return event;
 };
