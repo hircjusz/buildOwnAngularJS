@@ -398,7 +398,10 @@ Scope.prototype.$broadcast = function (eventName) {
     var event = { name: eventName };
     var additionalArguments = [].slice.call(arguments).splice(1);
     var listenersArgs = [event].concat(additionalArguments);
-    this.$$fireEventOnScope(eventName, listenersArgs);
+    this.$$everyScope(function (scope) {
+        scope.$$fireEventOnScope(eventName, listenersArgs);
+        return true;
+    });
     return event;
 };
 Scope.prototype.$$fireEventOnScope = function (eventName, listenersArgs) {
