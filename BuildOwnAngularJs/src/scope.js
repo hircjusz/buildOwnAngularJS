@@ -276,6 +276,8 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
     var self = this;
     var changeCount = 0;
     var oldLength;
+    var veryOldValue;
+    var trackVeryOldValue = (listenerFn.length > 1);
 
     function isArrayLike(obj) {
         if (_.isNull(obj) || _.isUndefined(obj)) {
@@ -348,7 +350,10 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
         return changeCount;
     };
     var internalListenerFn = function() {
-        listenerFn(newValue, oldValue, self);
+        listenerFn(newValue, veryOldValue, self);
+        if (trackVeryOldValue) {
+            veryOldValue = _.clone(newValue);
+        }
     };
 
     return this.$watch(internalWatchFn, internalListenerFn);
