@@ -224,7 +224,7 @@ Scope.prototype.$clearPhase = function () {
 };
 
 /*Inheritance*/
-Scope.prototype.$new = function (isolated,parent) {
+Scope.prototype.$new = function (isolated, parent) {
     var child;
     parent = parent || this;
     if (isolated) {
@@ -260,7 +260,7 @@ Scope.prototype.$$everyScope = function (fn) {
 
 };
 
-Scope.prototype.$destroy= function() {
+Scope.prototype.$destroy = function () {
     if (this.$parent) {
         var siblings = this.$parent.$$children;
         var indexOfThis = siblings.indexOf(this);
@@ -287,7 +287,7 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
             return false;
         }
         var length = obj.length;
-         return length === 0 ||
+        return length === 0 ||
 (_.isNumber(length) && length > 0 && (length - 1) in obj);
     }
 
@@ -304,7 +304,7 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
                     changeCount++;
                     oldValue.length = newValue.length;
                 }
-                _.forEach(newValue, function(newItem, i) {
+                _.forEach(newValue, function (newItem, i) {
                     var bothNaN = _.isNaN(newItem) && _.isNaN(oldValue[i]);
                     if (!bothNaN && newItem !== oldValue[i]) {
                         changeCount++;
@@ -334,7 +334,7 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
                 });
                 if (oldLength > newLength) {
                     changeCount++;
-                    _.forOwn(oldValue, function(oldVal, key) {
+                    _.forOwn(oldValue, function (oldVal, key) {
                         if (!newValue.hasOwnProperty(key)) {
                             oldLength--;
                             delete oldValue[key];
@@ -352,7 +352,7 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
         }
         return changeCount;
     };
-    var internalListenerFn = function() {
+    var internalListenerFn = function () {
         if (firstRun) {
             listenerFn(newValue, newValue, self);
             firstRun = false;
@@ -369,16 +369,16 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
 };
 
 //Events
-Scope.prototype.$on= function(eventName, listener) {
+Scope.prototype.$on = function (eventName, listener) {
     var listeners = this.$$listeners[eventName];
     if (!listeners) {
         this.$$listeners[eventName] = listeners = [];
     }
     listeners.push(listener);
-    return function() {
+    return function () {
         var index = listeners.indexOf(listener);
         if (index >= 0) {
-            listeners.splice(index, 1);
+            listeners[index] = null;
         }
     }
 }
@@ -394,8 +394,14 @@ Scope.prototype.$$fireEventOnScope = function (eventName, additionalArgs) {
     var event = { name: eventName };
     var listenerArgs = [event].concat(additionalArgs);
     var listeners = this.$$listeners[eventName] || [];
-    _.forEach(listeners, function (listener) {
-        listener.apply(null, listenerArgs);
-    });
+    var i = 0;
+    while (i < listeners.length) {
+        if (listeners[i] === null) {
+            listeners.splice(i, 1);
+        } else {
+            listeners[i].apply(null, listenerArgs);
+            i++;
+        }
+    }
     return event;
 };
