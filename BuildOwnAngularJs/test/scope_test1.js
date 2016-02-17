@@ -1367,6 +1367,11 @@ function (scope) {
                 expect(listener.calls.mostRecent().args[2]).toEqual(['additional', 'arguments']);
                 expect(listener.calls.mostRecent().args[3]).toEqual('...');
             });
+            it("returns the event object on " + method, function () {
+                var returnedEvent = scope[method]('someEvent');
+                expect(returnedEvent).toBeDefined();
+                expect(returnedEvent.name).toEqual('someEvent');
+            });
         });
 
 
