@@ -383,22 +383,24 @@ Scope.prototype.$on = function (eventName, listener) {
     }
 }
 Scope.prototype.$emit = function (eventName) {
-    var event = { name: eventName };
+    var event = { name: eventName, targetScope: this };
     var additionalArguments = [].slice.call(arguments).splice(1);
     var listenersArgs = [event].concat(additionalArguments);
     var scope = this;
 
     do {
+        event.currentScope = scope;
         scope.$$fireEventOnScope(eventName, listenersArgs);
         scope = scope.$parent;
     } while (scope);
     return event;
 };
 Scope.prototype.$broadcast = function (eventName) {
-    var event = { name: eventName };
+    var event = { name: eventName, targetScope: this };
     var additionalArguments = [].slice.call(arguments).splice(1);
     var listenersArgs = [event].concat(additionalArguments);
     this.$$everyScope(function (scope) {
+        event.currentScope = scope;
         scope.$$fireEventOnScope(eventName, listenersArgs);
         return true;
     });
