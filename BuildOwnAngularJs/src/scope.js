@@ -402,7 +402,11 @@ Scope.prototype.$emit = function (eventName) {
 
     do {
         event.currentScope = scope;
-        scope.$$fireEventOnScope(eventName, listenersArgs);
+        try {
+            scope.$$fireEventOnScope(eventName, listenersArgs);
+        } catch (e) {
+            console.error(e);
+        }
         scope = scope.$parent;
     } while (scope && !propagationStopped);
     event.currentScope = null;
@@ -420,7 +424,11 @@ Scope.prototype.$broadcast = function (eventName) {
     var listenersArgs = [event].concat(additionalArguments);
     this.$$everyScope(function (scope) {
         event.currentScope = scope;
-        scope.$$fireEventOnScope(eventName, listenersArgs);
+        try {
+            scope.$$fireEventOnScope(eventName, listenersArgs);
+        } catch (e) {
+            console.error(e);
+        }
         return true;
     });
     event.currentScope = null;
@@ -433,7 +441,11 @@ Scope.prototype.$$fireEventOnScope = function (eventName, listenersArgs) {
         if (listeners[i] === null) {
             listeners.splice(i, 1);
         } else {
-            listeners[i].apply(null, listenersArgs);
+            try {
+                listeners[i].apply(null, listenersArgs);
+            } catch (e) {
+                console.error(e);
+            }
             i++;
         }
     }
