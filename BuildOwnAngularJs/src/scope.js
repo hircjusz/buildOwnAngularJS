@@ -375,6 +375,12 @@ Scope.prototype.$on= function(eventName, listener) {
         this.$$listeners[eventName] = listeners = [];
     }
     listeners.push(listener);
+    return function() {
+        var index = listeners.indexOf(listener);
+        if (index >= 0) {
+            listeners.splice(index, 1);
+        }
+    }
 }
 Scope.prototype.$emit = function (eventName) {
     var additionalArguments = [].slice.call(arguments).splice(1);

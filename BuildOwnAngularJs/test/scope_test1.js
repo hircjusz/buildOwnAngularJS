@@ -1372,6 +1372,14 @@ function (scope) {
                 expect(returnedEvent).toBeDefined();
                 expect(returnedEvent.name).toEqual('someEvent');
             });
+
+            it("can be deregistered " + method, function () {
+                var listener = jasmine.createSpy();
+                var deregister = scope.$on('someEvent', listener);
+                deregister();
+                scope[method]('someEvent');
+                expect(listener).not.toHaveBeenCalled();
+            });
         });
 
 
