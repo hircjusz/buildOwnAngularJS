@@ -10,6 +10,7 @@ function Scope() {
     this.$$postDigestQueue = [];
     this.$$children = [];
     this.$root = this;
+    this.$$listeners = {};
 }
 
 Scope.prototype.$eval = function (expr, locals) {
@@ -240,6 +241,7 @@ Scope.prototype.$new = function (isolated,parent) {
     parent.$$children.push(child);
     child.$$watchers = [];
     child.$$children = [];
+    child.$$listeners = {};
     child.$parent = parent;
     return child;
 };
@@ -365,3 +367,12 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
     return this.$watch(internalWatchFn, internalListenerFn);
 
 };
+
+//Events
+Scope.prototype.$on= function(eventName, listener) {
+    var listeners = this.$$listeners[eventName];
+    if (!listeners) {
+        this.$$listeners[eventName] = listeners = [];
+    }
+    listeners.push(listener);
+}
