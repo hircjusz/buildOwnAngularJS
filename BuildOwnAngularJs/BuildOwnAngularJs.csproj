@@ -64,6 +64,7 @@
     <Content Include="Scripts\jasmine.js" />
     <Content Include="src\parse.js" />
     <Content Include="src\scope.js" />
+    <Content Include="test\parse_spec.js" />
     <Content Include="test\scope_test1.js" />
     <Content Include="Web.config" />
   </ItemGroup>
