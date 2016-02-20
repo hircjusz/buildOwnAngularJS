@@ -5,6 +5,10 @@ function parse(expr) {
     return parser.parse(expr);
 }
 //module.exports = parse;
+  var ESCAPES = {
+        'n': '\n', 'f': '\f', 'r': '\r', 't': '\t',
+        'v': '\v', '\'': '\'', '"': '"'
+  };
 
 function Lexer() {
 }
@@ -33,21 +37,41 @@ Lexer.prototype.lex = function (text) {
 };
 
 
-Lexer.prototype.readString = function(quote) {
+Lexer.prototype.readString = function (quote) {
     this.index++;
     var string = '';
+    var escape = false;
     while (this.index < this.text.length) {
         var ch = this.text.charAt(this.index);
-        if (ch === quote) {
-            this.index++;
-            this.tokens.push({
-                text: string,
-                value: string
-            });
-            return;
-        } else {
-            string += ch;
-        }
+        if (escape) {
+            if (ch === 'u') {
+                var hex = this.text.substring(this.index + 1, this.index + 5);
+                if (!hex.match(/[\da-f]{4}/i)) {
+                    throw 'Invalid unicode escape';
+                }
+                this.index += 4;
+                string += String.fromCharCode(parseInt(hex, 16));
+            } else {
+                var replacement = ESCAPES[ch];
+                if (replacement) {
+                    string += replacement;
+                } else {
+                    string += ch;
+                }
+            }
+            escape = false;
+        } else if (ch === quote) {
+                this.index++;
+                this.tokens.push({
+                    text: string,
+                    value: string
+                });
+                return;
+            } else if (ch === '\\') {
+                escape = true;
+            } else {
+                string += ch;
+            }
         this.index++;
     }
     throw 'Unmatched quote';
@@ -134,10 +158,17 @@ ASTCompiler.prototype.recurse = function (ast) {
             return this.escape(ast.value);
     }
 };
+ASTCompiler.prototype.stringEscapeRegex = /[^ a-zA-Z0-9]/g;
+
+ASTCompiler.prototype.stringEscapeFn = function (c) {
+    return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
+};
 
 ASTCompiler.prototype.escape = function (value) {
     if (_.isString(value)) {
-        return '\'' + value + '\'';
+        return '\'' +
+        value.replace(this.stringEscapeRegex, this.stringEscapeFn) +
+        '\'';
     } else {
         return value;
     }
