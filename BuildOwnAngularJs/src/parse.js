@@ -13,6 +13,10 @@ var ESCAPES = {
 function Lexer() {
 }
 
+Lexer.prototype.is = function (chs) {
+    return chs.indexOf(this.ch) >= 0;
+};
+
 Lexer.prototype.lex = function (text) {
     this.text = text;
     this.index = 0;
@@ -23,16 +27,16 @@ Lexer.prototype.lex = function (text) {
     while (this.index < this.text.length) {
         this.ch = this.text.charAt(this.index);
 
-        if (this.isNumber(this.ch) || (this.ch === '.' && this.isNumber(this.peek()))) {
+        if (this.isNumber(this.ch) || (this.is('.') && this.isNumber(this.peek()))) {
             this.readNumber();
         }
-        else if (this.ch === '\'' || this.ch === '"') {
+        else if (this.is('\'"')) {
             this.readString(this.ch);
         } else if (this.isIdent(this.ch)) {
             this.readIdent();
         } else if (this.isWhitespace(this.ch)) {
             this.index++;
-        } else if (this.ch === '[' || this.ch === ']' || this.ch === ',') {
+        } else if (this.is('[],{}:')) {
             this.tokens.push({ text: this.ch });
             this.index++;
         } else {
@@ -161,17 +165,20 @@ function AST(lexer) {
 AST.Program = 'Program';
 AST.Literal = 'Literal';
 AST.ArrayExpression = 'ArrayExpression';
+AST.ObjectExpression = 'ObjectExpression';
 
 AST.prototype.program = function () {
     return { type: AST.Program, body: this.primary() };
 };
 AST.prototype.primary = function () {
-    if(this.expect('[')) {
+    if (this.expect('[')) {
         return this.arrayDeclaration();
-    }else if (this.constants.hasOwnProperty(this.tokens[0].text)) {
-        return this.constants[this.consume().text];
-    } else
-        return this.constant();
+    } else if (this.expect('{')) {
+        return this.object();
+    } else if (this.constants.hasOwnProperty(this.tokens[0].text)) {
+            return this.constants[this.consume().text];
+        } else
+            return this.constant();
 };
 
 AST.prototype.constant = function () {
@@ -201,6 +208,12 @@ AST.prototype.consume= function(e) {
         throw 'Unexpected exception . Expected' + e;
     }
     return token;
+}
+
+AST.prototype.object= function() {
+    this.consume('}');
+    return {type:AST.ObjectExpression}
+
 }
 
 AST.prototype.arrayDeclaration = function () {
@@ -251,6 +264,8 @@ ASTCompiler.prototype.recurse = function (ast) {
                 return self.recurse(element);
             }, this);
             return '[' + elements.join(',') + ']';
+        case AST.ObjectExpression:
+            return '{}';
     }
 };
 ASTCompiler.prototype.stringEscapeRegex = /[^ a-zA-Z0-9]/g;
