@@ -166,6 +166,9 @@ AST.Program = 'Program';
 AST.Literal = 'Literal';
 AST.ArrayExpression = 'ArrayExpression';
 AST.ObjectExpression = 'ObjectExpression';
+AST.Property = 'Property';
+
+
 
 AST.prototype.program = function () {
     return { type: AST.Program, body: this.primary() };
@@ -210,10 +213,20 @@ AST.prototype.consume= function(e) {
     return token;
 }
 
-AST.prototype.object= function() {
-    this.consume('}');
-    return {type:AST.ObjectExpression}
+AST.prototype.object = function () {
+    var properties = [];
+    if (!this.peek('}')) {
+        do {
+            var property = { type: AST.Property };
+            property.key = this.constant();
+            this.consume(':');
+            property.value = this.primary();
+            properties.push(property);
 
+        } while (this.expect(','));
+    }
+    this.consume('}');
+    return {type:AST.ObjectExpression,properties: properties};
 }
 
 AST.prototype.arrayDeclaration = function () {
@@ -253,19 +266,24 @@ ASTCompiler.prototype.compile = function (text) {
 };
 
 ASTCompiler.prototype.recurse = function (ast) {
+    var self = this;
     switch (ast.type) {
         case AST.Program:
             this.state.body.push('return ', this.recurse(ast.body), ';');
         case AST.Literal:
             return this.escape(ast.value);
         case AST.ArrayExpression:
-            var self = this;
             var elements = _.map(ast.elements, function(element) {
                 return self.recurse(element);
             }, this);
             return '[' + elements.join(',') + ']';
         case AST.ObjectExpression:
-            return '{}';
+            var properties = _.map(ast.properties, function(property) {
+                var key = self.escape(property.key.value);
+                var value = self.recurse(property.value);
+                return key + ':' + value;
+            }, this);
+            return '{' + properties.join(',') + '}';
     }
 };
 ASTCompiler.prototype.stringEscapeRegex = /[^ a-zA-Z0-9]/g;
