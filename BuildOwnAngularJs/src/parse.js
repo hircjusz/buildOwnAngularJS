@@ -59,7 +59,8 @@ Lexer.prototype.readIdent = function () {
     }
 
     var token = {
-        text: text
+        text: text,
+        identifier: true
     };
     this.tokens.push(token);
     return text;
@@ -167,7 +168,7 @@ AST.Literal = 'Literal';
 AST.ArrayExpression = 'ArrayExpression';
 AST.ObjectExpression = 'ObjectExpression';
 AST.Property = 'Property';
-
+AST.Identifier = 'Identifier';
 
 
 AST.prototype.program = function () {
@@ -179,13 +180,17 @@ AST.prototype.primary = function () {
     } else if (this.expect('{')) {
         return this.object();
     } else if (this.constants.hasOwnProperty(this.tokens[0].text)) {
-            return this.constants[this.consume().text];
-        } else
-            return this.constant();
+        return this.constants[this.consume().text];
+    } else
+        return this.constant();
 };
 
 AST.prototype.constant = function () {
     return { type: AST.Literal, value: this.consume().value };
+};
+
+AST.prototype.identifier = function () {
+    return { type: AST.Identifier, name: this.consume().text };
 };
 
 AST.prototype.constants = {
@@ -199,13 +204,13 @@ AST.prototype.ast = function (text) {
     return this.program();
 };
 
-AST.prototype.expect= function(e) {
+AST.prototype.expect = function (e) {
     var token = this.peek(e);
     if (token) {
         return this.tokens.shift();
     }
 }
-AST.prototype.consume= function(e) {
+AST.prototype.consume = function (e) {
     var token = this.expect(e);
     if (!token) {
         throw 'Unexpected exception . Expected' + e;
@@ -218,7 +223,11 @@ AST.prototype.object = function () {
     if (!this.peek('}')) {
         do {
             var property = { type: AST.Property };
-            property.key = this.constant();
+            if (this.peek().identifier) {
+                property.key = this.identifier();
+            } else {
+                property.key = this.constant();
+            }
             this.consume(':');
             property.value = this.primary();
             properties.push(property);
@@ -226,7 +235,7 @@ AST.prototype.object = function () {
         } while (this.expect(','));
     }
     this.consume('}');
-    return {type:AST.ObjectExpression,properties: properties};
+    return { type: AST.ObjectExpression, properties: properties };
 }
 
 AST.prototype.arrayDeclaration = function () {
@@ -242,10 +251,10 @@ AST.prototype.arrayDeclaration = function () {
 
     }
     this.consume(']');
-    return { type: AST.ArrayExpression, elements:elements };
+    return { type: AST.ArrayExpression, elements: elements };
 }
 
-AST.prototype.peek= function(e) {
+AST.prototype.peek = function (e) {
     if (this.tokens.length > 0) {
         var text = this.tokens[0].text;
         if (text === e || !e) {
@@ -273,13 +282,15 @@ ASTCompiler.prototype.recurse = function (ast) {
         case AST.Literal:
             return this.escape(ast.value);
         case AST.ArrayExpression:
-            var elements = _.map(ast.elements, function(element) {
+            var elements = _.map(ast.elements, function (element) {
                 return self.recurse(element);
             }, this);
             return '[' + elements.join(',') + ']';
         case AST.ObjectExpression:
-            var properties = _.map(ast.properties, function(property) {
-                var key = self.escape(property.key.value);
+            var properties = _.map(ast.properties, function (property) {
+                var key = property.key.type === AST.Identifier ?
+                    property.key.name :
+                    self.escape(property.key.value);
                 var value = self.recurse(property.value);
                 return key + ':' + value;
             }, this);
