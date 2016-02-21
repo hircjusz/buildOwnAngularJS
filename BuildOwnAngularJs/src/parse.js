@@ -181,6 +181,8 @@ AST.prototype.primary = function () {
         return this.object();
     } else if (this.constants.hasOwnProperty(this.tokens[0].text)) {
         return this.constants[this.consume().text];
+    }else if (this.peek().identifier) {
+        return this.identifier();
     } else
         return this.constant();
 };
@@ -271,7 +273,7 @@ ASTCompiler.prototype.compile = function (text) {
     var ast = this.astBuilder.ast(text);
     this.state = { body: [] };
     this.recurse(ast);
-    return new Function(this.state.body.join(''));
+    return new Function('s',this.state.body.join(''));
 };
 
 ASTCompiler.prototype.recurse = function (ast) {
@@ -295,8 +297,15 @@ ASTCompiler.prototype.recurse = function (ast) {
                 return key + ':' + value;
             }, this);
             return '{' + properties.join(',') + '}';
+        case AST.Identifier:
+            return this.nonComputedMember('s', ast.name);
     }
 };
+
+ASTCompiler.prototype.nonComputedMember = function(left,right) {
+    return '(' + left + ').' + right;
+}
+
 ASTCompiler.prototype.stringEscapeRegex = /[^ a-zA-Z0-9]/g;
 
 ASTCompiler.prototype.stringEscapeFn = function (c) {
