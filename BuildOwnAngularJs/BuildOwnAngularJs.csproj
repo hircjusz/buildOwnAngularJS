@@ -66,6 +66,7 @@
     <Content Include="src\scope.js" />
     <Content Include="test\parse_spec.js" />
     <Content Include="test\scope_test1.js" />
+    <Content Include="utility\utility_test.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
