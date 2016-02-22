@@ -36,7 +36,7 @@ Lexer.prototype.lex = function (text) {
             this.readIdent();
         } else if (this.isWhitespace(this.ch)) {
             this.index++;
-        } else if (this.is('[],{}:.()')) {
+        } else if (this.is('[],{}:.()=')) {
             this.tokens.push({ text: this.ch });
             this.index++;
         } else {
@@ -172,11 +172,22 @@ AST.Identifier = 'Identifier';
 AST.ThisExpression = 'ThisExpression';
 AST.MemberExpression = 'MemberExpression';
 AST.CallExpression = 'CallExpression';
-
+AST.AssignmentExpression = 'AssignmentExpression';
 
 AST.prototype.program = function () {
-    return { type: AST.Program, body: this.primary() };
+    return { type: AST.Program, body: this.assignment() };
 };
+
+AST.prototype.assignment = function() {
+    var left = this.primary();
+    if (this.expect('=')) {
+        var right = this.primary();
+        return { type: AST.AssignmentExpression, left: left, right: right };
+    }
+    return left;
+};
+
+
 AST.prototype.primary = function () {
     var primary;
     if (this.expect('[')) {
@@ -226,7 +237,7 @@ AST.prototype.parseArguments = function() {
     var args = [];
     if (!this.peek(')')) {
         do {
-            args.push(this.primary());
+            args.push(this.assignment());
         } while (this.expect(','));
     }
     return args;
@@ -288,7 +299,7 @@ AST.prototype.object = function () {
                 property.key = this.constant();
             }
             this.consume(':');
-            property.value = this.primary();
+            property.value = this.assignment();
             properties.push(property);
 
         } while (this.expect(','));
@@ -304,7 +315,7 @@ AST.prototype.arrayDeclaration = function () {
             if (this.peek(']')) {
                 break;
             }
-            elements.push(this.primary());
+            elements.push(this.assignment());
 
         } while (this.expect(','));
 
@@ -398,7 +409,17 @@ ASTCompiler.prototype.recurse = function (ast, context) {
                     callee = this.nonComputedMember(callContext.context, callContext.name);
                 }
             }
-            return callee + '&&' + callee + '('+args.join(',')+')';
+            return callee + '&&' + callee + '(' + args.join(',') + ')';
+        case AST.AssignmentExpression:
+            var leftContext = {};
+            this.recurse(ast.left, leftContext);
+            var leftExpr;
+            if (leftContext.computed) {
+                leftExpr = this.computedMember(leftContext.context, leftContext.name);
+            } else {
+                leftExpr = this.nonComputedMember(leftContext.context, leftContext.name);
+            }
+            return this.assign(leftExpr, this.recurse(ast.right));
 
     }
 };
