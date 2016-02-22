@@ -1,5 +1,6 @@
 ﻿/// <reference path="../lib/loodash.js" />
 /// <reference path="../Scripts/jasmine.js" />
+/// <reference path="../utility/utility.js" />
 
 describe("Utility", function () {
 
@@ -39,6 +40,16 @@ describe("Utility", function () {
             var obj = { 0: 'a', 1: 'b', 2: 'c' };
             var arr = _.values(obj);
             expect(arr[0]).toBe(['a','b','c'][0]);
+        });
+
+    });
+
+    describe("ccParser", function() {
+
+        it("simple test", function () {
+            var parser= new ccParser('xxxx');
+
+            expect(1).toBe(1);
         });
 
     });
