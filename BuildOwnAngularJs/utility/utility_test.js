@@ -32,6 +32,14 @@ describe("Utility", function () {
             var fn = new Function('a', 'b', bodyFn);
             expect(fn(1, 2)).toBe(5);
         });
+
+        it("function calls internal function", function () {
+            var fun = function() { return 1; };
+
+            var bodyFn = ' var fn=function(a,b){return fun()+a+b;}; return fn;';
+            var fn = new Function('fun', bodyFn)(fun);
+            expect(fn(1, 2)).toBe(4);
+        });
     });
 
     describe("Array&&Objects", function () {
