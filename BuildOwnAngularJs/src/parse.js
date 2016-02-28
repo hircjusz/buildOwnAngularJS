@@ -554,9 +554,16 @@ ASTCompiler.prototype.recurse = function (ast, context, create) {
             return ast.operator +
                             '(' + this.ifDefined(this.recurse(ast.argument), 0) + ')';
         case AST.BinaryExpression:
-            return '(' + this.recurse(ast.left) +
+            if (ast.operator === '+' || ast.operator === '-') {
+                return '(' + this.ifDefined(this.recurse(ast.left), 0) + ')' +
                 ast.operator +
-                this.recurse(ast.right)+')';
+                '(' + this.ifDefined(this.recurse(ast.right), 0) + ')';
+            } else {
+                return '(' + this.recurse(ast.left) + ')' +
+                ast.operator +
+                '(' + this.recurse(ast.right) + ')';
+            }
+            break;
     }
 };
 
