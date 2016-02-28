@@ -22,6 +22,13 @@ function ensureSafeObject(obj) {
     if (obj) {
         if (obj.window === obj) {
             throw 'Referencing window in Angular expressions is disallowed!';
+        } else if (obj.children &&
+        (obj.nodeName || (obj.prop && obj.attr && obj.find))) {
+            throw 'Referencing DOM nodes in Angular expressions is disallowed!';
+        } else if (obj.constructor === obj) {
+            throw 'Referencing Function in Angular expressions is disallowed!';
+        } else if (obj === Object) {
+            throw 'Referencing Object in Angular expressions is disallowed!';
         }
     }
     return obj;
@@ -404,6 +411,7 @@ ASTCompiler.prototype.recurse = function (ast, context,create) {
                 context.name = ast.name;
                 context.computed = false;
             }
+            this.addEnsureSafeObject(intoId);
             return intoId;
         case AST.ThisExpression:
             return 's';
@@ -443,16 +451,17 @@ ASTCompiler.prototype.recurse = function (ast, context,create) {
             var callContext = {};
             var callee = this.recurse(ast.callee,callContext);
             var args = _.map(ast.arguments, function(argument) {
-                return self.recurse(argument);
+                return 'ensureSafeObject('+self.recurse(argument)+')';
             });
             if (callContext.name) {
+                this.addEnsureSafeObject(callContext.context);
                 if (callContext.computed) {
                     callee = this.computedMember(callContext.context, callContext.name);
                 } else {
                     callee = this.nonComputedMember(callContext.context, callContext.name);
                 }
             }
-            return callee + '&&' + callee + '(' + args.join(',') + ')';
+            return callee + '&&ensureSafeObject('+ callee + '(' + args.join(',') + '))';
         case AST.AssignmentExpression:
             var leftContext = {};
             this.recurse(ast.left, leftContext,true);
@@ -462,13 +471,17 @@ ASTCompiler.prototype.recurse = function (ast, context,create) {
             } else {
                 leftExpr = this.nonComputedMember(leftContext.context, leftContext.name);
             }
-            return this.assign(leftExpr, this.recurse(ast.right));
+            return this.assign(leftExpr, 'ensureSafeObject('+this.recurse(ast.right)+')');
 
     }
 };
 
 ASTCompiler.prototype.addEnsureSafeMemberName = function(expr) {
     this.state.body.push('ensureSafeMemberName(' + expr + ');');
+};
+
+ASTCompiler.prototype.addEnsureSafeObject = function (expr) {
+    this.state.body.push('ensureSafeObject(' + expr + ');');
 };
 
 ASTCompiler.prototype.nextId = function () {
