@@ -18,6 +18,15 @@ function ensureSafeMemberName(name) {
     }
 }
 
+function ensureSafeObject(obj) {
+    if (obj) {
+        if (obj.window === obj) {
+            throw 'Referencing window in Angular expressions is disallowed!';
+        }
+    }
+    return obj;
+}
+
 function Lexer() {
 }
 
@@ -350,7 +359,9 @@ ASTCompiler.prototype.compile = function (text) {
                      this.state.body.join('') +
                      '}; return fn;';
     /* jshint -W054 */
-    return new Function('ensureSafeMemberName', fnString)(ensureSafeMemberName);
+    return new
+        Function('ensureSafeMemberName', 'ensureSafeObject', fnString)
+        (ensureSafeMemberName, ensureSafeObject);
 };
 
 ASTCompiler.prototype.recurse = function (ast, context,create) {
@@ -409,7 +420,7 @@ ASTCompiler.prototype.recurse = function (ast, context,create) {
                     this.if_(this.not(this.computedMember(left, right)),
                     this.assign(this.computedMember(left, right), '{}'));
                 }
-                this.if_(left, this.assign(intoId, this.computedMember(left, right)));
+                this.if_(left, this.assign(intoId, 'ensureSafeObject('+this.computedMember(left, right)+')'));
                 if (context) {
                     context.name = right;
                     context.computed = true;
@@ -421,7 +432,7 @@ ASTCompiler.prototype.recurse = function (ast, context,create) {
                     this.assign(this.nonComputedMember(left, ast.property.name), '{}'));
                 }
                 this.if_(left,
-                this.assign(intoId, this.nonComputedMember(left, ast.property.name)));
+                this.assign(intoId, 'ensureSafeObject('+this.nonComputedMember(left, ast.property.name)+')'));
                 if (context) {
                     context.name = ast.property.name;
                     context.computed = false;
