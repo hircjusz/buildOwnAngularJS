@@ -11,12 +11,21 @@ var ESCAPES = {
 };
 
 var OPERATORS = {
-    '+': true,
-    '!': true,
+    '+':true,
     '-': true,
+    '!': true,
     '*': true,
     '/': true,
-    '%': true
+    '%': true,
+    '=': true,
+    '==': true,
+    '!=': true,
+    '===': true,
+    '!==': true,
+    '<': true,
+    '>': true,
+    '<=': true,
+    '>=': true
 }
 var CALL = Function.prototype.call;
 var APPLY = Function.prototype.apply;
@@ -90,11 +99,23 @@ Lexer.prototype.lex = function (text) {
             this.readIdent();
         } else if (this.isWhitespace(this.ch)) {
             this.index++;
-        } else if (this.is('[],{}:.()=+!-*/%')) {
+        } else if (this.is('[],{}:.()')) {
             this.tokens.push({ text: this.ch });
             this.index++;
         } else {
-            throw 'Unexpected next character' + this.ch;
+            var ch = this.ch;
+            var ch2 = this.ch + this.peek();
+            var ch3 = this.ch + this.peek() + this.peek(2);
+            var op = OPERATORS[ch];
+            var op2 = OPERATORS[ch2];
+            var op3 = OPERATORS[ch3];
+            if (op || op2 || op3) {
+                var token = op3 ? ch3 : (op2 ? ch2 : ch);
+                this.tokens.push({text: token});
+                this.index += token.length;
+            } else {
+                throw 'Unexpected next character: '+this.ch;
+            }
         }
     }
     return this.tokens;
@@ -209,9 +230,10 @@ Lexer.prototype.isExpOperator = function (ch) {
     return ch === '-' || ch === '+' || this.isNumber(ch);
 };
 
-Lexer.prototype.peek = function () {
-    return this.index < this.text.length - 1 ?
-    this.text.charAt(this.index + 1) :
+Lexer.prototype.peek = function (n) {
+    n = n || 1;
+    return this.index + n < this.text.length ?
+    this.text.charAt(this.index + n) :
     false;
 };
 
@@ -235,6 +257,35 @@ AST.BinaryExpression = 'BinaryExpression';
 AST.prototype.program = function () {
     return { type: AST.Program, body: this.assignment() };
 };
+
+
+AST.prototype.equality = function () {
+    var left = this.relational();
+    var token;
+    while ((token = this.expect('==', '!=', '===', '!=='))) {
+        left = {
+            type: AST.BinaryExpression,
+            left: left,
+            operator: token.text,
+            right: this.relational()
+        }
+    }
+    return left;
+}
+
+AST.prototype.relational= function() {
+    var left = this.additive();
+    var token;
+    while ((token = this.expect('<', '>', '<=', '>='))) {
+        left = {
+            type: AST.BinaryExpression,
+            left: left,
+            operator: token.text,
+            right: this.additive()
+        }
+    }
+    return left;
+}
 
 AST.prototype.additive = function () {
     var left = this.multiplicative();
@@ -280,9 +331,9 @@ AST.prototype.unary = function () {
 
 }
 AST.prototype.assignment = function () {
-    var left = this.additive();
+    var left = this.equality();
     if (this.expect('=')) {
-        var right = this.additive();
+        var right = this.equality();
         return { type: AST.AssignmentExpression, left: left, right: right };
     }
     return left;
