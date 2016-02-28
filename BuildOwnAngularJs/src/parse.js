@@ -11,7 +11,7 @@ var ESCAPES = {
 };
 
 var OPERATORS = {
-    '+':true,
+    '+': true,
     '-': true,
     '!': true,
     '*': true,
@@ -25,7 +25,9 @@ var OPERATORS = {
     '<': true,
     '>': true,
     '<=': true,
-    '>=': true
+    '>=': true,
+    '&&': true,
+    '||': true
 }
 var CALL = Function.prototype.call;
 var APPLY = Function.prototype.apply;
@@ -99,7 +101,7 @@ Lexer.prototype.lex = function (text) {
             this.readIdent();
         } else if (this.isWhitespace(this.ch)) {
             this.index++;
-        } else if (this.is('[],{}:.()')) {
+        } else if (this.is('[],{}:.()?')) {
             this.tokens.push({ text: this.ch });
             this.index++;
         } else {
@@ -111,10 +113,10 @@ Lexer.prototype.lex = function (text) {
             var op3 = OPERATORS[ch3];
             if (op || op2 || op3) {
                 var token = op3 ? ch3 : (op2 ? ch2 : ch);
-                this.tokens.push({text: token});
+                this.tokens.push({ text: token });
                 this.index += token.length;
             } else {
-                throw 'Unexpected next character: '+this.ch;
+                throw 'Unexpected next character: ' + this.ch;
             }
         }
     }
@@ -253,11 +255,57 @@ AST.CallExpression = 'CallExpression';
 AST.AssignmentExpression = 'AssignmentExpression';
 AST.UnaryExpression = 'UnaryExpression';
 AST.BinaryExpression = 'BinaryExpression';
+AST.LogicalExpression = 'LogicalExpression';
+AST.ConditionalExpression = 'ConditionalExpression';
 
 AST.prototype.program = function () {
     return { type: AST.Program, body: this.assignment() };
 };
 
+AST.prototype.ternary = function () {
+    var test = this.logicalOR();
+    if (this.expect('?')) {
+        var consequent = this.assignment();
+        if (this.consume(':')) {
+            var alternate = this.assignment();
+            return {
+                type: AST.ConditionalExpression,
+                test: test,
+                consequent: consequent,
+                alternate: alternate
+            };
+        }
+    }
+    return test;
+}
+
+AST.prototype.logicalOR = function () {
+    var left = this.logicalAND();
+    var token;
+    while ((token = this.expect('||'))) {
+        left = {
+            type: AST.LogicalExpression,
+            left: left,
+            operator: token.text,
+            right: this.logicalAND()
+        }
+    }
+    return left;
+}
+
+AST.prototype.logicalAND = function () {
+    var left = this.equality();
+    var token;
+    while ((token = this.expect('&&'))) {
+        left = {
+            type: AST.LogicalExpression,
+            left: left,
+            operator: token.text,
+            right: this.equality()
+        }
+    }
+    return left;
+}
 
 AST.prototype.equality = function () {
     var left = this.relational();
@@ -273,7 +321,7 @@ AST.prototype.equality = function () {
     return left;
 }
 
-AST.prototype.relational= function() {
+AST.prototype.relational = function () {
     var left = this.additive();
     var token;
     while ((token = this.expect('<', '>', '<=', '>='))) {
@@ -306,12 +354,12 @@ AST.prototype.multiplicative = function () {
     var left = this.unary();
     var token;
     while ((token = this.expect('*', '/', '%'))) {
-          left= {
-              type: AST.BinaryExpression,
-              left: left,
-              operator: token.text,
-              right:this.unary()
-          }
+        left = {
+            type: AST.BinaryExpression,
+            left: left,
+            operator: token.text,
+            right: this.unary()
+        }
     }
     return left;
 
@@ -331,9 +379,9 @@ AST.prototype.unary = function () {
 
 }
 AST.prototype.assignment = function () {
-    var left = this.equality();
+    var left = this.ternary();
     if (this.expect('=')) {
-        var right = this.equality();
+        var right = this.ternary();
         return { type: AST.AssignmentExpression, left: left, right: right };
     }
     return left;
@@ -615,6 +663,21 @@ ASTCompiler.prototype.recurse = function (ast, context, create) {
                 '(' + this.recurse(ast.right) + ')';
             }
             break;
+        case AST.LogicalExpression:
+            intoId = this.nextId();
+            this.state.body.push(this.assign(intoId, this.recurse(ast.left)));
+            this.if_(ast.operator === '&&' ? intoId : this.not(intoId),
+            this.assign(intoId, this.recurse(ast.right)));
+            return intoId;
+        case AST.ConditionalExpression:
+            intoId = this.nextId();
+            var testId = this.nextId();
+            this.state.body.push(this.assign(testId, this.recurse(ast.test)));
+            this.if_(testId,
+            this.assign(intoId, this.recurse(ast.consequent)));
+            this.if_(this.not(testId),
+            this.assign(intoId, this.recurse(ast.alternate)));
+            return intoId;
     }
 };
 
