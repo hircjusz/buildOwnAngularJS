@@ -62,8 +62,10 @@
     <Content Include="lib\loodash.js" />
     <Content Include="Scripts\jasmine-html.js" />
     <Content Include="Scripts\jasmine.js" />
+    <Content Include="src\filter.js" />
     <Content Include="src\parse.js" />
     <Content Include="src\scope.js" />
+    <Content Include="test\filter_spec.js" />
     <Content Include="test\parse_spec.js" />
     <Content Include="test\scope_test1.js" />
     <Content Include="utility\utility.js" />
