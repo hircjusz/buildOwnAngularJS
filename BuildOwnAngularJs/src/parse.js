@@ -27,7 +27,8 @@ var OPERATORS = {
     '<=': true,
     '>=': true,
     '&&': true,
-    '||': true
+    '||': true,
+    '|': true
 }
 var CALL = Function.prototype.call;
 var APPLY = Function.prototype.apply;
@@ -257,18 +258,31 @@ AST.UnaryExpression = 'UnaryExpression';
 AST.BinaryExpression = 'BinaryExpression';
 AST.LogicalExpression = 'LogicalExpression';
 AST.ConditionalExpression = 'ConditionalExpression';
+AST.CallExpression = 'CallExpression';
 
 AST.prototype.program = function () {
     var body = [];
     while (true) {
         if (this.tokens.length) {
-            body.push(this.assignment());
+            body.push(this.filter());
         }
         if (!this.expect(';')) {
             return { type: AST.Program, body: body };
         }
     }
 
+};
+AST.prototype.filter = function() {
+    var left = this.assignment();
+    while (this.expect('|')) {
+        left = {
+            type: AST.CallExpression,
+            callee: this.identifier(),
+            arguments: [left],
+            filter:true
+        };
+    }
+    return left;
 };
 
 AST.prototype.ternary = function () {
@@ -400,7 +414,7 @@ AST.prototype.assignment = function () {
 AST.prototype.primary = function () {
     var primary;
     if (this.expect('(')) {
-        primary = this.assignment();
+        primary = this.filter();
         this.consume(')');
     }else if (this.expect('[')) {
         primary = this.arrayDeclaration();
@@ -544,9 +558,9 @@ function ASTCompiler(astBuilder) {
 }
 ASTCompiler.prototype.compile = function (text) {
     var ast = this.astBuilder.ast(text);
-    this.state = { body: [], nextId: 0, vars: [] };
+    this.state = { body: [], nextId: 0, vars: [],filters: {} };
     this.recurse(ast);
-    var fnString = 'var fn=function(s,l){' +
+    var fnString =this.filterPrefix()+ 'var fn=function(s,l){' +
                      (this.state.vars.length ?
                      'var ' + this.state.vars.join(',') + ';' :
                      ''
@@ -555,8 +569,8 @@ ASTCompiler.prototype.compile = function (text) {
                      '}; return fn;';
     /* jshint -W054 */
     return new
-        Function('ensureSafeMemberName', 'ensureSafeObject', 'ensureSafeFunction', 'ifDefined', fnString)
-        (ensureSafeMemberName, ensureSafeObject, ensureSafeFunction, ifDefined);
+        Function('ensureSafeMemberName', 'ensureSafeObject', 'ensureSafeFunction', 'ifDefined','filter', fnString)
+        (ensureSafeMemberName, ensureSafeObject, ensureSafeFunction, ifDefined,filter);
 };
 
 ASTCompiler.prototype.recurse = function (ast, context, create) {
@@ -640,21 +654,31 @@ ASTCompiler.prototype.recurse = function (ast, context, create) {
             }
             return intoId;
         case AST.CallExpression:
-            var callContext = {};
-            var callee = this.recurse(ast.callee, callContext);
-            var args = _.map(ast.arguments, function (argument) {
-                return 'ensureSafeObject(' + self.recurse(argument) + ')';
-            });
-            if (callContext.name) {
-                this.addEnsureSafeObject(callContext.context);
-                if (callContext.computed) {
-                    callee = this.computedMember(callContext.context, callContext.name);
-                } else {
-                    callee = this.nonComputedMember(callContext.context, callContext.name);
-                }
+            var callContext, callee, args;
+            if (ast.filter) {
+                callee = this.filter(ast.callee.name);
+                args = _.map(ast.arguments, function (arg) {
+                    return self.recurse(arg);
+                }, this);
+                return callee + '(' + args + ')';
             }
-            this.addEnsureSafeFunction(callee);
-            return callee + '&&ensureSafeObject(' + callee + '(' + args.join(',') + '))';
+            else {
+                callContext = {};
+                callee = this.recurse(ast.callee, callContext);
+                args = _.map(ast.arguments, function(argument) {
+                    return 'ensureSafeObject(' + self.recurse(argument) + ')';
+                });
+                if (callContext.name) {
+                    this.addEnsureSafeObject(callContext.context);
+                    if (callContext.computed) {
+                        callee = this.computedMember(callContext.context, callContext.name);
+                    } else {
+                        callee = this.nonComputedMember(callContext.context, callContext.name);
+                    }
+                }
+                this.addEnsureSafeFunction(callee);
+                return callee + '&&ensureSafeObject(' + callee + '(' + args.join(',') + '))';
+            }
         case AST.AssignmentExpression:
             var leftContext = {};
             this.recurse(ast.left, leftContext, true);
@@ -696,6 +720,24 @@ ASTCompiler.prototype.recurse = function (ast, context, create) {
             return intoId;
     }
 };
+ASTCompiler.prototype.filterPrefix = function () {
+    var self = this;
+    if (_.isEmpty(this.state.filters)) {
+        return '';
+    } else {
+        var parts = _.map(this.state.filters, function (varName, filterName) {
+            return varName + '=' + 'filter(' + self.escape(filterName) + ')';
+        }, this);
+        return 'var ' + parts.join(',') + ';';
+    }
+};
+
+ASTCompiler.prototype.filter = function(name) {
+    if (!this.state.filters.hasOwnProperty(name)) {
+        this.state.filters[name] = this.nextId(true);
+    }
+    return this.state.filters[name];
+};
 
 ASTCompiler.prototype.ifDefined = function (value, defaultValue) {
     return 'ifDefined(' + value + ',' + this.escape(defaultValue) + ')';
@@ -712,9 +754,11 @@ ASTCompiler.prototype.addEnsureSafeObject = function (expr) {
     this.state.body.push('ensureSafeObject(' + expr + ');');
 };
 
-ASTCompiler.prototype.nextId = function () {
+ASTCompiler.prototype.nextId = function (skip) {
     var id = 'v' + (this.state.nextId++);
-    this.state.vars.push(id);
+    if (!skip) {
+        this.state.vars.push(id);
+    }
     return id;
 };
 
