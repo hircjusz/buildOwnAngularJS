@@ -1,6 +1,6 @@
 ﻿/// <reference path="../Scripts/jasmine.js" />
-/// <reference path="../src/filter.js" />
 /// <reference path="../lib/loodash.js" />
+/// <reference path="../src/filter.js" />
 /// <reference path="../src/parse.js" />
 
 
@@ -71,6 +71,23 @@ describe("filters", function() {
         });
         var fn = parse('"hello" | surround:"*":"!"');
         expect(fn()).toEqual('*hello!');
+    });
+
+
+    describe("filter filter", function () {
+        it('is available', function () {
+            expect(filter('filter')).toBeDefined();
+        });
+    });
+
+    it('can filter an array with a predicate function', function () {
+        var fn = parse('[1, 2, 3, 4] | filter:isOdd');
+        var scope = {
+            isOdd: function (n) {
+                return n % 2 !== 0;
+            }
+        };
+        expect(fn(scope)).toEqual([1, 3]);
     });
 
 });

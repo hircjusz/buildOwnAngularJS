@@ -1,4 +1,6 @@
-﻿var filters = {};
+﻿/// <reference path="../lib/loodash.js" />
+
+var filters = {};
 
 function register(name, factory) {
 
@@ -17,4 +19,12 @@ function register(name, factory) {
 function filter(name) {
     return filters[name];
 }
+
+function filterFilter() {
+    return function (array,filterExpr) {
+        return _.filter(array, filterExpr);
+    };
+}
+
+register('filter', filterFilter);
 
