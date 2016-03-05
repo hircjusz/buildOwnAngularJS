@@ -50,6 +50,12 @@ describe("Utility", function () {
             expect(arr[0]).toBe(['a','b','c'][0]);
         });
 
+        it("objects to plain obj", function () {
+            var obj = { 0: 'a', 1: 'b', 2: 'c',3: { '3a': {} } };
+            var t= _.toPlainObject(obj);
+        });
+
+
     });
 
     describe("ccParser", function() {
