@@ -1,4 +1,6 @@
-﻿function initWatchVal() { }
+﻿/// <reference path="../src/parse.js" />
+
+function initWatchVal() { }
 
 function Scope() {
     this.$$watchers = [];
@@ -14,7 +16,7 @@ function Scope() {
 }
 
 Scope.prototype.$eval = function (expr, locals) {
-    return expr(this, locals);
+    return parse(expr)(this, locals);
 };
 
 Scope.prototype.$$postDigest = function (fn) {
@@ -35,7 +37,7 @@ Scope.prototype.$watch = function (watchFn, listenerFn, valueEq) {
     var self = this;
 
     var watcher = {
-        watchFn: watchFn,
+        watchFn: parse(watchFn),
         listenerFn: listenerFn || function () { },
         valueEq: !!valueEq,
         last: initWatchVal
@@ -283,6 +285,7 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
     var veryOldValue;
     var trackVeryOldValue = (listenerFn.length > 1);
     var firstRun = true;
+    watchFn = parse(watchFn);
 
     function isArrayLike(obj) {
         if (_.isNull(obj) || _.isUndefined(obj)) {

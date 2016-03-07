@@ -1,9 +1,18 @@
 ﻿'use strict';
+
 function parse(expr) {
-    var lexer = new Lexer();
-    var parser = new Parser(lexer);
-    return parser.parse(expr);
-}
+    switch (typeof expr) {
+        case 'string':
+            var lexer = new Lexer();
+            var parser = new Parser(lexer);
+            return parser.parse(expr);
+        case 'function':
+            return expr;
+        default:
+            return _.noop;
+    }
+
+};
 //module.exports = parse;
 var ESCAPES = {
     'n': '\n', 'f': '\f', 'r': '\r', 't': '\t',
@@ -272,7 +281,7 @@ AST.prototype.program = function () {
     }
 
 };
-AST.prototype.filter = function() {
+AST.prototype.filter = function () {
     var left = this.assignment();
     while (this.expect('|')) {
         var args = [left];
@@ -280,7 +289,7 @@ AST.prototype.filter = function() {
             type: AST.CallExpression,
             callee: this.identifier(),
             arguments: args,
-            filter:true
+            filter: true
         };
         while (this.expect(':')) {
             args.push(this.assignment());
@@ -420,7 +429,7 @@ AST.prototype.primary = function () {
     if (this.expect('(')) {
         primary = this.filter();
         this.consume(')');
-    }else if (this.expect('[')) {
+    } else if (this.expect('[')) {
         primary = this.arrayDeclaration();
     } else if (this.expect('{')) {
         primary = this.object();
@@ -562,9 +571,9 @@ function ASTCompiler(astBuilder) {
 }
 ASTCompiler.prototype.compile = function (text) {
     var ast = this.astBuilder.ast(text);
-    this.state = { body: [], nextId: 0, vars: [],filters: {} };
+    this.state = { body: [], nextId: 0, vars: [], filters: {} };
     this.recurse(ast);
-    var fnString =this.filterPrefix()+ 'var fn=function(s,l){' +
+    var fnString = this.filterPrefix() + 'var fn=function(s,l){' +
                      (this.state.vars.length ?
                      'var ' + this.state.vars.join(',') + ';' :
                      ''
@@ -573,8 +582,8 @@ ASTCompiler.prototype.compile = function (text) {
                      '}; return fn;';
     /* jshint -W054 */
     return new
-        Function('ensureSafeMemberName', 'ensureSafeObject', 'ensureSafeFunction', 'ifDefined','filter', fnString)
-        (ensureSafeMemberName, ensureSafeObject, ensureSafeFunction, ifDefined,filter);
+        Function('ensureSafeMemberName', 'ensureSafeObject', 'ensureSafeFunction', 'ifDefined', 'filter', fnString)
+        (ensureSafeMemberName, ensureSafeObject, ensureSafeFunction, ifDefined, filter);
 };
 
 ASTCompiler.prototype.recurse = function (ast, context, create) {
@@ -669,7 +678,7 @@ ASTCompiler.prototype.recurse = function (ast, context, create) {
             else {
                 callContext = {};
                 callee = this.recurse(ast.callee, callContext);
-                args = _.map(ast.arguments, function(argument) {
+                args = _.map(ast.arguments, function (argument) {
                     return 'ensureSafeObject(' + self.recurse(argument) + ')';
                 });
                 if (callContext.name) {
@@ -736,7 +745,7 @@ ASTCompiler.prototype.filterPrefix = function () {
     }
 };
 
-ASTCompiler.prototype.filter = function(name) {
+ASTCompiler.prototype.filter = function (name) {
     if (!this.state.filters.hasOwnProperty(name)) {
         this.state.filters[name] = this.nextId(true);
     }
