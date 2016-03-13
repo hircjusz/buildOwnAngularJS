@@ -1614,6 +1614,12 @@ function (scope) {
             });
         });
 
+        it('removes constant watches after first invocation', function () {
+            scope.$watch('[1, 2, 3]', function () { });
+            scope.$digest();
+            expect(scope.$$watchers.length).toBe(0);
+        });
+
     });
 
 
