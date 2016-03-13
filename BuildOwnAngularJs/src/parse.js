@@ -13,6 +13,14 @@ function parse(expr) {
     }
 
 };
+function isLiteral(ast) {
+    return ast.body.length === 0 ||
+    ast.body.length === 1 && (
+    ast.body[0].type === AST.Literal ||
+    ast.body[0].type === AST.ArrayExpression ||
+    ast.body[0].type === AST.ObjectExpression);
+}
+
 //module.exports = parse;
 var ESCAPES = {
     'n': '\n', 'f': '\f', 'r': '\r', 't': '\t',
@@ -564,13 +572,89 @@ AST.prototype.arrayDeclaration = function () {
 }
 
 
-
+function markConstantExpressions(ast) {
+    var allConstants;
+    switch (ast.type) {
+        case AST.Program:
+            allConstants = true;
+            _.forEach(ast.body, function (expr) {
+                markConstantExpressions(expr);
+                allConstants = allConstants && expr.constant;
+            });
+            ast.constant = allConstants;
+            break;
+        case AST.Literal:
+            ast.constant = true;
+            break;
+        case AST.Identifier:
+            ast.constant = false;
+            break;
+        case AST.ArrayExpression:
+            allConstants = true;
+            _.forEach(ast.elements, function (element) {
+                markConstantExpressions(element);
+                allConstants = allConstants && element.constant;
+            });
+            ast.constant = allConstants;
+            break;
+        case AST.ObjectExpression:
+            allConstants = true;
+            _.forEach(ast.properties, function (property) {
+                markConstantExpressions(property.value);
+                allConstants = allConstants && property.value.constant;
+            });
+            ast.constant = allConstants;
+            break;
+        case AST.ThisExpression:
+            ast.constant = false;
+            break;
+        case AST.MemberExpression:
+            markConstantExpressions(ast.object);
+            if (ast.computed) {
+                markConstantExpressions(ast.property);
+            }
+            ast.constant = ast.object.constant &&
+            (!ast.computed || ast.property.constant);
+            break;
+        case AST.CallExpression:
+            allConstants = ast.filter ? true : false;
+            _.forEach(ast.arguments, function (arg) {
+                markConstantExpressions(arg);
+                allConstants = allConstants && arg.constant;
+            });
+            ast.constant = allConstants;
+            break;
+        case AST.AssignmentExpression:
+            markConstantExpressions(ast.left);
+            markConstantExpressions(ast.right);
+            ast.constant = ast.left.constant && ast.right.constant;
+            break;
+        case AST.UnaryExpression:
+            markConstantExpressions(ast.argument);
+            ast.constant = ast.argument.constant;
+            break;
+        case AST.BinaryExpression:
+        case AST.LogicalExpression:
+            markConstantExpressions(ast.left);
+            markConstantExpressions(ast.right);
+            ast.constant = ast.left.constant && ast.right.constant;
+            break;
+        case AST.ConditionalExpression:
+            markConstantExpressions(ast.test);
+            markConstantExpressions(ast.consequent);
+            markConstantExpressions(ast.alternate);
+            ast.constant =
+            ast.test.constant && ast.consequent.constant && ast.alternate.constant;
+            break;
+    }
+}
 
 function ASTCompiler(astBuilder) {
     this.astBuilder = astBuilder;
 }
 ASTCompiler.prototype.compile = function (text) {
     var ast = this.astBuilder.ast(text);
+    markConstantExpressions(ast);
     this.state = { body: [], nextId: 0, vars: [], filters: {} };
     this.recurse(ast);
     var fnString = this.filterPrefix() + 'var fn=function(s,l){' +
@@ -581,9 +665,12 @@ ASTCompiler.prototype.compile = function (text) {
                      this.state.body.join('') +
                      '}; return fn;';
     /* jshint -W054 */
-    return new
+    var fn = new
         Function('ensureSafeMemberName', 'ensureSafeObject', 'ensureSafeFunction', 'ifDefined', 'filter', fnString)
         (ensureSafeMemberName, ensureSafeObject, ensureSafeFunction, ifDefined, filter);
+    fn.literal = isLiteral(ast);
+    fn.constant = ast.constant;
+    return fn;
 };
 
 ASTCompiler.prototype.recurse = function (ast, context, create) {
