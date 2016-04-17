@@ -6,6 +6,13 @@
 'use strict';
 
 describe("parse", function () {
+
+    var scope;
+    beforeEach(function () {
+        scope = new Scope();
+    });
+
+
     it("can parse an integer", function () {
         var fn = parse('42');
         expect(fn).toBeDefined();
@@ -704,4 +711,7 @@ describe("parse", function () {
         expect(parse('true ? 1 : b').constant).toBe(false);
         expect(parse('a ? b : c').constant).toBe(false);
     });
+
+   
+
 });
