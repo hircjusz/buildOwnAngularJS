@@ -1,4 +1,6 @@
-﻿'use strict';
+﻿
+/// <reference path="../lib/loodash.js" />
+'use strict';
 
 function constantWatchDelegate(scope,listenerFn,valueEq,watchFn) {
     var unwatch = scope.$watch(
@@ -37,6 +39,39 @@ function oneTimeWatchDelegate(scope, listenerFn, valueEq, watchFn) {
     return unwatch;
 }
 
+function oneTimeLiteralWatchDelegate(scope,listenerFn,valueEq,watchFn) {
+
+    function isAllDefined(val) {
+
+        return _.every(val, function isUndefined(value) {
+            return value !== undefined;
+        });
+    }
+
+    var unwatch = scope.$watch(
+        function() { return watchFn(scope); },
+        function(newValue,oldValue,scope) {
+            if (_.isFunction(listenerFn)) {
+                listenerFn.apply(this, arguments);
+            }
+            if (isAllDefined(newValue)) {
+                scope.$$postDigest(
+                    function() {
+                        if (isAllDefined(newValue)) {
+                            unwatch();
+                        }
+                    }
+                );
+            }
+
+
+        },valueEq
+    );
+
+    return unwatch;
+
+}
+
 function parse(expr) {
     switch (typeof expr) {
         case 'string':
@@ -50,8 +85,8 @@ function parse(expr) {
             var parseFn = parser.parse(expr);
             if (parseFn.constant) {
                 parseFn.$$watchDelegate = constantWatchDelegate;
-            } else {
-                parseFn.$$watchDelegate = oneTimeWatchDelegate;
+            } else if (oneTime) {
+                parseFn.$$watchDelegate = parseFn.literal ? oneTimeLiteralWatchDelegate :oneTimeWatchDelegate;
             }
             return parseFn;
         case 'function':
