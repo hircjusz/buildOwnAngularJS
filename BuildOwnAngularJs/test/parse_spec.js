@@ -1,9 +1,10 @@
 ﻿/// <reference path="../Scripts/jasmine.js" />
+/// <reference path="../src/scope.js" />
 /// <reference path="../src/parse.js" />
 /// <reference path="../lib/loodash.js" />
 /// <reference path="../src/filter.js" />
 
-'use strict';
+
 
 describe("parse", function () {
 
@@ -710,6 +711,22 @@ describe("parse", function () {
         expect(parse('true ? a : 2').constant).toBe(false);
         expect(parse('true ? 1 : b').constant).toBe(false);
         expect(parse('a ? b : c').constant).toBe(false);
+    });
+
+    it('allows calling assign on identifier expressions', function () {
+        var fn = parse('anAttribute');
+        expect(fn.assign).toBeDefined();
+        var scope = {};
+        fn.assign(scope, 42);
+        expect(scope.anAttribute).toBe(42);
+    });
+
+    it('allows calling assign on member expressions', function () {
+        var fn = parse('anObject.anAttribute');
+        expect(fn.assign).toBeDefined();
+        var scope = {};
+        fn.assign(scope, 42);
+        expect(scope.anObject).toEqual({ anAttribute: 42 });
     });
 
    

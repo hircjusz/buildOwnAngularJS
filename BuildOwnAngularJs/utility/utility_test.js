@@ -40,6 +40,11 @@ describe("Utility", function () {
             var fn = new Function('fun', bodyFn)(fun);
             expect(fn(1, 2)).toBe(4);
         });
+
+        it("function result push", function () {
+            var result = [];
+            result.push('a','b','c','d');
+        });
     });
 
     describe("Array&&Objects", function () {
