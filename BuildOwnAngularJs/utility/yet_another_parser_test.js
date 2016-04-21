@@ -4,8 +4,20 @@
 
 describe("Yet another parser", function() {
 
-    describe("Function", function() {
+    describe("parserT", function() {
         
+        it("function isWhiteSpace", function () {
+
+            expect(isWhiteSpace(' ')).toBe(true);
+        });
+
+        it("function isDecimal", function () {
+
+            expect(isDecimalDigit('9')).toBe(true);
+        });
+
+
+
 
     });
 
