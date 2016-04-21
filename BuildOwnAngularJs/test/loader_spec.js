@@ -7,6 +7,7 @@ describe("setupModuleLoader", function () {
 
     beforeEach(function () {
         delete window.angular;
+        setupModuleLoader(window);
     });
 
     it('exposes angular on the window', function () {
@@ -33,4 +34,20 @@ describe("setupModuleLoader", function () {
         expect(window.angular.module).toBe(module);
     });
 
+    it('allows registering a module', function () {
+        var myModule = window.angular.module('myModule', []);
+        expect(myModule).toBeDefined();
+        expect(myModule.name).toEqual('myModule');
+    });
+
+    it('replaces a module when registered with same name again', function () {
+        var myModule = window.angular.module('myModule', []);
+        var myNewModule = window.angular.module('myModule', []);
+        expect(myNewModule).not.toBe(myModule);
+    });
+
+    it('attaches the requires array to the registered module', function () {
+        var myModule = window.angular.module('myModule', ['myOtherModule']);
+        expect(myModule.requires).toEqual(['myOtherModule']);
+    });
 });
