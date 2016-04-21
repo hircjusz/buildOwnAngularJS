@@ -63,8 +63,10 @@
     <Content Include="Scripts\jasmine-html.js" />
     <Content Include="Scripts\jasmine.js" />
     <Content Include="src\filter.js" />
+    <Content Include="src\loader.js" />
     <Content Include="src\parse.js" />
     <Content Include="src\scope.js" />
+    <Content Include="test\loader_spec.js" />
     <Content Include="utility\yet_another_parser_test.js" />
     <Content Include="utility\yet_another_parser.js" />
     <Content Include="test\filter_spec.js" />
