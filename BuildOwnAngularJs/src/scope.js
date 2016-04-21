@@ -1,5 +1,7 @@
 ﻿/// <reference path="../lib/loodash.js" />
 /// <reference path="../src/parse.js" />
+/// <reference path="../src/filter.js" />
+
 
 function initWatchVal() { }
 
