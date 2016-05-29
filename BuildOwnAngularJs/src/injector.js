@@ -16,6 +16,8 @@ function createInjector(modulesToLoad, strictDI) {
                  name + ' <- ' + path.join(' <- '));
             }
             return instanceCache[name];
+        } else if (providerCache.hasOwnProperty(name)) {
+            return providerCache[name];
         }
         else if (providerCache.hasOwnProperty(name + 'Provider')) {
             path.unshift(name);
