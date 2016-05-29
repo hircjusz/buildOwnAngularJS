@@ -41,7 +41,8 @@ function createInjector(modulesToLoad,strictDI) {
     }
 
     function invoke(fn,self,locals) {
-        var args = _.map(fn.$inject, function (token) {
+
+        var args = _.map(annotate(fn), function (token) {
             if (_.isString(token)) {
                 return locals && locals.hasOwnProperty(token) ?
                     locals[token] : cache[token];
@@ -49,7 +50,11 @@ function createInjector(modulesToLoad,strictDI) {
                 throw 'Incorrect injected token. Expected string but got '+token;
             }
         });
-       return  fn.apply(self, args);
+
+        if (_.isArray(fn)) {
+            fn = _.last(fn);
+        }
+        return  fn.apply(self, args);
     };
 
     _.forEach(modulesToLoad, function loadModule(moduleName) {
