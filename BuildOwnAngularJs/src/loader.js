@@ -9,10 +9,14 @@
             throw 'hasOwnProperty is not a valid module name';
         }
         var invokeQueue = [];
+        var configBlocks = [];
 
-        var invokeLater = function (method,arrayMethod) {
+
+        var invokeLater = function (service,method,arrayMethod,queue) {
             return function () {
-                invokeQueue[arrayMethod || 'push']([method, arguments]);
+                queue = queue || invokeQueue;
+                var item = [service,method,arguments];
+                invokeQueue[arrayMethod || 'push'](item);
                 return moduleInstance;
             };
         };
@@ -20,8 +24,9 @@
         var moduleInstance = {
             name: name,
             requires: requires,
-            constant: invokeLater('constant', 'unshift'),
-            provider: invokeLater('provider'),
+            constant: invokeLater('$provide','constant', 'unshift'),
+            provider: invokeLater('$provide', 'provider'),
+            config:invokeLater('$injector','invoke','push',configBlocks),
             _invokeQueue:invokeQueue
         };
         modules[name] = moduleInstance;

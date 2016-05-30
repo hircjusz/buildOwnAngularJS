@@ -489,6 +489,25 @@ describe('injector', function () {
             expect(hasRun).toBe(true);
         });
 
+        it('injects config blocks with provider injector', function () {
+            var module = window.angular.module('myModule', []);
+            module.config(function ($provide) {
+                $provide.constant('a', 42);
+            });
+            var injector = createInjector(['myModule']);
+            expect(injector.get('a')).toBe(42);
+        });
+
+        it('injects config blocks with provider injector', function () {
+            var module = window.angular.module('myModule', []);
+            module.config(function ($provide) {
+                $provide.constant('a', 42);
+            });
+            var injector = createInjector(['myModule']);
+            expect(injector.get('a')).toBe(42);
+        });
+
+
     });
 
 });
