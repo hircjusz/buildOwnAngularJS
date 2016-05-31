@@ -28,7 +28,13 @@
             constant: invokeLater('$provide','constant', 'unshift'),
             provider: invokeLater('$provide', 'provider'),
             config:invokeLater('$injector','invoke','push',configBlocks),
-            _invokeQueue:invokeQueue
+            _invokeQueue: invokeQueue,
+            run: function(fn) {
+                moduleInstance._runBlocks.push(fn);
+                return moduleInstance;
+            },
+            _configBlocks: configBlocks,
+            _runBlocks:[]
         };
         if (configFn) {
             moduleInstance.config(configFn);
