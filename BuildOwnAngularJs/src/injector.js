@@ -90,20 +90,20 @@ function createInjector(modulesToLoad, strictDI) {
         }
 
         return {
-            has: function(name) {
+            has: function (name) {
                 return cache.hasOwnProperty(name) ||
                     providerCache.hasOwnProperty(name + 'Provider');
             },
             get: getService,
             annotate: annotate,
             invoke: invoke,
-            instantiate:instantiate
+            instantiate: instantiate
 
 
         }
     }
 
-    var providerInjector = providerCache.$injector  = createInternalInjector(providerCache, function() {
+    var providerInjector = providerCache.$injector = createInternalInjector(providerCache, function () {
         throw 'Unknown provider' + path.join('<-');
     });
 
@@ -131,7 +131,7 @@ function createInjector(modulesToLoad, strictDI) {
     };
 
     function runInvokeQueue(queue) {
-        _.forEach(queue, function(invokeArgs) {
+        _.forEach(queue, function (invokeArgs) {
             var service = providerInjector.get(invokeArgs[0]);
             var method = invokeArgs[1];
             var args = invokeArgs[2];
@@ -141,22 +141,28 @@ function createInjector(modulesToLoad, strictDI) {
     }
     var runBlocks = [];
 
-    _.forEach(modulesToLoad, function loadModule(moduleName) {
-        if (!loadedModules.hasOwnProperty(moduleName)) {
-            loadedModules[moduleName] = true;
-            var module = window.angular.module(moduleName);
-            _.forEach(module.requires, loadModule);
-            runInvokeQueue(module._invokeQueue);
-            runInvokeQueue(module._configBlocks);
-            runBlocks = runBlocks.concat(module._runBlocks);
-            
+    _.forEach(modulesToLoad, function loadModule(module) {
+        if (_.isString(module)) {
+            if (!loadedModules.hasOwnProperty(module)) {
+                loadedModules[module] = true;
+                module = window.angular.module(module);
+                _.forEach(module.requires, loadModule);
+                runInvokeQueue(module._invokeQueue);
+                runInvokeQueue(module._configBlocks);
+                runBlocks = runBlocks.concat(module._runBlocks);
+
+            }
+        } else if (_.isFunction(module) || _.isArray(module)) {
+            runBlocks.push(providerInjector.invoke(module));
         }
     });
 
-    _.forEach(runBlocks, function (runBlock) {
-                instanceInjector.invoke(runBlock);
-            });
+    _.forEach(_.compact(runBlocks), function (runBlock) {
+        if (runBlock) {
+            instanceInjector.invoke(runBlock);
+        }
+    });
 
 
-   return instanceInjector;
+    return instanceInjector;
 }
