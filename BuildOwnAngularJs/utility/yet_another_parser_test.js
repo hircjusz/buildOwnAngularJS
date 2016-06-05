@@ -182,6 +182,22 @@ describe("Yet another parser", function () {
             }));
         });
 
+        it("function parser exponent", function () {
+
+            var parser = new Parser();
+            var expr = parser.parse('1234');
+
+            //scanner = new Scanner('213e5 aaa a190 213.23 / *  -');
+            //var token;
+            //token = scanner.next();
+            expect(expr).toEqual(jasmine.objectContaining({
+                Expression: {
+                    Number:1234
+                }
+            }));
+
+        });
+
     });
 
 });

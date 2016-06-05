@@ -180,3 +180,105 @@ Scanner.prototype.next= function() {
 }
 
 
+function Lexer() {
+}
+
+Lexer.prototype.reset= function(expression) {
+    this.scanner = new Scanner(expression);
+}
+
+Lexer.prototype.next = function () {
+    this.currenToken = this.scanner.next();
+    return this.currenToken;
+}
+
+Lexer.prototype.peek = function () {
+    if (!this.currenToken) this.next();
+    return this.currenToken;
+}
+
+
+function T() {
+    
+}
+
+T.Identifier = 'Identifier';
+T.Number = 'Number';
+
+
+function Parser() {
+    
+}
+
+Parser.prototype.parse= function(expression) {
+    this.lexer = new Lexer();
+    this.lexer.reset(expression);
+
+    var expr=this.parseExpression();
+
+    return {
+        'Expression':expr
+    };
+
+}
+
+Parser.prototype.matchOp = function (token,op) {
+    return (typeof token !== 'undefined') &&
+        token.type === 'Operator' &&
+        token.value === op;
+};
+
+
+
+Parser.prototype.parseExpression = function() {
+    return this.parseAssignment();
+
+};
+
+Parser.prototype.parseAssignment = function () {
+    var token, expr;
+    expr = this.parseAdditive();
+    return expr;
+};
+
+Parser.prototype.parseAdditive = function () {
+    var token, expr;
+    expr = this.parseMultiplicative();
+    return expr;
+
+};
+
+Parser.prototype.parseMultiplicative = function () {
+    var token, expr;
+    expr = this.parseUnary();
+    return expr;
+
+};
+
+Parser.prototype.parseUnary = function () {
+    var token, expr;
+    expr = this.parsePrimary();
+    return expr;
+};
+
+Parser.prototype.parsePrimary = function () {
+    var token, expr;
+    token = this.lexer.peek();
+
+    if (token.type === T.Number) {
+        token = this.lexer.peek();
+        return {
+            'Number':token.value
+        };
+    }
+
+    return expr;
+};
+
+Parser.prototype.parseFunctionCall = function () {
+    var token, expr;
+};
+
+Parser.prototype.parseArgumentList = function () {
+    var token, expr;
+};
