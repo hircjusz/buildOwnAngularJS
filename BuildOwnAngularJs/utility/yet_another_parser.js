@@ -64,7 +64,7 @@ Scanner.prototype.skipSpaces = function () {
 
 Scanner.prototype.scanOperator = function () {
     var ch = this.peekNextChar();
-    if ('+-*/()'.indexOf(ch) >= 0) {
+    if ('+-*/(),'.indexOf(ch) >= 0) {
         return this.createToken('Operator', this.getNextChar());
     }
     return undefined;
@@ -175,6 +175,7 @@ Scanner.prototype.next = function () {
     if (typeof token !== 'undefined') {
         return token;
     }
+    
     throw new SyntaxError('Unknown token ' + this.peekNextChar());
 
 }
@@ -306,14 +307,21 @@ Parser.prototype.parseUnary = function () {
 Parser.prototype.parsePrimary = function () {
     var token, expr;
     token = this.lexer.peek();
-    this.lexer.next();
-    if (token.type === T.Identifier) {
-        return {
-            'Identifier': token.value
+
+    if (token.type === T.Identifier){
+        var name = token.value;
+        token = this.lexer.next();
+        if (this.matchOp(token, '(')) {
+            return this.parseFunctionCall(name);
         }
+
+        return {
+                'Identifier': token.value
+            }
     }
 
     if (token.type === T.Number) {
+        this.lexer.next();
         return {
             'Number': token.value
         };
@@ -335,12 +343,53 @@ Parser.prototype.parsePrimary = function () {
     return expr;
 };
 
-Parser.prototype.parseFunctionCall = function () {
-    var token, expr;
+Parser.prototype.parseFunctionCall = function (name) {
+    var token, args=[];
+
+    token = this.lexer.peek();
+    this.lexer.next();
+    if (!this.matchOp(token, '(')) {
+        throw new SyntaxError('Oczekiwano (');
+    }
+
+    token = this.lexer.peek();
+
+    if (!this.matchOp(token, ')')) {
+        args = this.parseArgumentList();
+    }
+
+    token = this.lexer.peek();
+    if (!this.matchOp(token, ')')) {
+        throw new SyntaxError('Oczekiwano )');
+    }
+
+    return {
+        'FunctionCall': {
+            'name':name,
+            'args':args
+        }
+    }
+
 };
 
 Parser.prototype.parseArgumentList = function () {
-    var token, expr;
+    var token, expr, args = [];
+
+    while (true) {
+        expr = this.parseExpression();
+        if (typeof expr === 'undefined') {
+            break;
+        }
+        args.push(expr);
+        token = this.lexer.peek();
+        if (!this.matchOp(token, ',')) {
+            break;
+        }
+        this.lexer.next();
+
+    }
+    return args;
+
 };
 
 

@@ -279,6 +279,17 @@ describe("Yet another parser", function () {
              value = evaluator.evaluate("(5*(6+4+(2*3)))/10");
         });
 
+        it("function simple function call", function () {
+
+            var parser = new Parser();
+            var expr = parser.parse('afun()');
+             expr = parser.parse('afun(2,3)');
+             expr = parser.parse('afun(2*3)');
+             expr = parser.parse('afun(2,bfun(6))');
+
+           
+        });
+
     });
 
 });
