@@ -36,7 +36,7 @@ describe("Yet another parser", function () {
             scanner = new Scanner('abcdef');
             expect(scanner.index).toBe(0);
             expect(scanner.length).toBe(6);
-            var ch=scanner.getNextChar();
+            var ch = scanner.getNextChar();
             expect(ch).toBe('a');
             ch = scanner.getNextChar();
             expect(ch).toBe('b');
@@ -58,7 +58,7 @@ describe("Yet another parser", function () {
             expect(scanner.length).toBe(10);
             var ch = scanner.skipSpaces();
             expect(scanner.index).toBe(4);
-            
+
         });
 
         it("function scanOperator", function () {
@@ -110,7 +110,7 @@ describe("Yet another parser", function () {
                 value: 'alpha'
             }));
             scanner = new Scanner('a190');
-             token = scanner.scanIdentifier();
+            token = scanner.scanIdentifier();
             expect(token).toEqual(jasmine.objectContaining({
                 type: 'Identifier',
                 value: 'a190'
@@ -121,7 +121,7 @@ describe("Yet another parser", function () {
 
         it("function scanNumber Integer", function () {
             scanner = new Scanner('20000');
-            var token= scanner.scanNumber();
+            var token = scanner.scanNumber();
 
         });
 
@@ -162,7 +162,7 @@ describe("Yet another parser", function () {
                 value: 213.23
             }));
 
-           
+
             token = scanner.next();
             expect(token).toEqual(jasmine.objectContaining({
                 type: 'Operator',
@@ -175,7 +175,7 @@ describe("Yet another parser", function () {
                 value: '*'
             }));
 
-           token = scanner.next();
+            token = scanner.next();
             expect(token).toEqual(jasmine.objectContaining({
                 type: 'Operator',
                 value: '-'
@@ -187,15 +187,96 @@ describe("Yet another parser", function () {
             var parser = new Parser();
             var expr = parser.parse('1234');
 
-            //scanner = new Scanner('213e5 aaa a190 213.23 / *  -');
-            //var token;
-            //token = scanner.next();
             expect(expr).toEqual(jasmine.objectContaining({
                 Expression: {
-                    Number:1234
+                    Number: 1234
                 }
             }));
 
+            var expr = parser.parse('alpha');
+
+            expect(expr).toEqual(jasmine.objectContaining({
+                Expression: {
+                    Identifier: 'alpha'
+                }
+            }));
+
+        });
+
+        it("function parse UNARY", function () {
+
+            var parser = new Parser();
+            var expr = parser.parse('--1234');
+
+            expect(expr).toEqual(jasmine.objectContaining({
+                Expression: {
+                    Unary: {
+                        operator: '-',
+                        expression: {
+                            Unary: {
+                                opeartor: '-',
+                                expression: {
+                                    Number: 1234
+                                }
+                            }
+                        }
+                    }
+                }
+            }));
+
+
+
+        });
+        it("function parse Multiplicative", function () {
+
+            var parser = new Parser();
+            var expr = parser.parse('5*6');
+
+            expect(expr).toEqual(jasmine.objectContaining({
+                Expression: {
+                    Binary: {
+                        operator: '*',
+                        left: {
+                            Number: 5
+                        },
+                        right: {
+                            Number:6
+                        }
+                    }
+                }
+            }));
+
+            expr = parser.parse('5*6*7');
+            expr = parser.parse('5*7/8');
+            expr = parser.parse('-5*-7/-8');
+
+        });
+
+        it("function parse Additive", function () {
+
+            var parser = new Parser();
+           
+
+            var expr = parser.parse('5+6+7');
+             expr = parser.parse('-5-6+7');
+
+        });
+
+        it("function parse Expression Brackets", function () {
+
+            var parser = new Parser();
+
+
+            var expr = parser.parse('5+(6*7)');
+            
+
+        });
+
+        it("function simple Evaluator", function() {
+
+            var evaluator = new Evaluator();
+            var value = evaluator.evaluate("5*6");
+             value = evaluator.evaluate("(5*(6+4+(2*3)))/10");
         });
 
     });

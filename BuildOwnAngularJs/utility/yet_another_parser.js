@@ -7,7 +7,7 @@ function Scanner(expression) {
     this.length = expression ? expression.length : 0;
 }
 
-Scanner.prototype.isWhiteSpace= function(ch) {
+Scanner.prototype.isWhiteSpace = function (ch) {
     return (ch === 'u0009')
         || (ch === ' ')
         || (ch === 'u00A0');
@@ -19,22 +19,22 @@ Scanner.prototype.isWhiteSpace= function(ch) {
 //        || (ch === 'u00A0');
 //}
 
-Scanner.prototype.isLetter=function(ch) {
+Scanner.prototype.isLetter = function (ch) {
     return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
 }
 
-Scanner.prototype.isDecimalDigit=function(ch)
+Scanner.prototype.isDecimalDigit = function (ch)
 { return (ch >= '0') && (ch <= '9'); }
 
 
-Scanner.prototype.createToken=function(type, value) {
+Scanner.prototype.createToken = function (type, value) {
     return {
         type: type,
         value: value
     }
 }
 
-Scanner.prototype.getNextChar= function() {
+Scanner.prototype.getNextChar = function () {
     var ch = undefined,
         idx = this.index;
     if (idx < this.length) {
@@ -44,14 +44,14 @@ Scanner.prototype.getNextChar= function() {
     return ch;
 }
 
-Scanner.prototype.peekNextChar= function() {
+Scanner.prototype.peekNextChar = function () {
     var idx = this.index;
     return ((idx < this.length) ? this.expression.charAt(idx) : undefined);
 
 }
 
 
-Scanner.prototype.skipSpaces= function() {
+Scanner.prototype.skipSpaces = function () {
     var ch;
     while (this.index < this.length) {
         ch = this.peekNextChar();
@@ -62,23 +62,23 @@ Scanner.prototype.skipSpaces= function() {
     }
 }
 
-Scanner.prototype.scanOperator= function() {
+Scanner.prototype.scanOperator = function () {
     var ch = this.peekNextChar();
     if ('+-*/()'.indexOf(ch) >= 0) {
-        return this.createToken('Operator',this.getNextChar());
+        return this.createToken('Operator', this.getNextChar());
     }
     return undefined;
 }
 
-Scanner.prototype.isIdentifierStart=function (ch) {
+Scanner.prototype.isIdentifierStart = function (ch) {
     return (ch === '_') || this.isLetter(ch);
 }
 
-Scanner.prototype.isIdentifierPart= function(ch) {
+Scanner.prototype.isIdentifierPart = function (ch) {
     return this.isIdentifierStart(ch) || this.isDecimalDigit(ch);
 }
 
-Scanner.prototype.scanIdentifier= function() {
+Scanner.prototype.scanIdentifier = function () {
     var ch, id;
     ch = this.peekNextChar();
 
@@ -91,13 +91,13 @@ Scanner.prototype.scanIdentifier= function() {
         if (!this.isIdentifierPart(ch)) {
             break;
         }
-        id+= this.getNextChar();
+        id += this.getNextChar();
 
     }
-    return this.createToken('Identifier',id);
+    return this.createToken('Identifier', id);
 }
 
-Scanner.prototype.scanNumber= function() {
+Scanner.prototype.scanNumber = function () {
     var ch = this.peekNextChar();
 
     if (!this.isDecimalDigit(ch) && (ch !== '.')) {
@@ -149,11 +149,11 @@ Scanner.prototype.scanNumber= function() {
         }
 
     }
-      return this.createToken('Number',isInt?parseInt(number):parseFloat(number));
+    return this.createToken('Number', isInt ? parseInt(number) : parseFloat(number));
 
 }
 
-Scanner.prototype.next= function() {
+Scanner.prototype.next = function () {
     var token;
 
     this.skipSpaces();
@@ -175,7 +175,7 @@ Scanner.prototype.next= function() {
     if (typeof token !== 'undefined') {
         return token;
     }
-    throw new SyntaxError('Unknown token '+this.peekNextChar());
+    throw new SyntaxError('Unknown token ' + this.peekNextChar());
 
 }
 
@@ -183,8 +183,9 @@ Scanner.prototype.next= function() {
 function Lexer() {
 }
 
-Lexer.prototype.reset= function(expression) {
+Lexer.prototype.reset = function (expression) {
     this.scanner = new Scanner(expression);
+    if (!this.currenToken) this.next();
 }
 
 Lexer.prototype.next = function () {
@@ -193,13 +194,13 @@ Lexer.prototype.next = function () {
 }
 
 Lexer.prototype.peek = function () {
-    if (!this.currenToken) this.next();
+
     return this.currenToken;
 }
 
 
 function T() {
-    
+
 }
 
 T.Identifier = 'Identifier';
@@ -207,22 +208,22 @@ T.Number = 'Number';
 
 
 function Parser() {
-    
+
 }
 
-Parser.prototype.parse= function(expression) {
+Parser.prototype.parse = function (expression) {
     this.lexer = new Lexer();
     this.lexer.reset(expression);
 
-    var expr=this.parseExpression();
+    var expr = this.parseExpression();
 
     return {
-        'Expression':expr
+        'Expression': expr
     };
 
 }
 
-Parser.prototype.matchOp = function (token,op) {
+Parser.prototype.matchOp = function (token, op) {
     return (typeof token !== 'undefined') &&
         token.type === 'Operator' &&
         token.value === op;
@@ -230,7 +231,7 @@ Parser.prototype.matchOp = function (token,op) {
 
 
 
-Parser.prototype.parseExpression = function() {
+Parser.prototype.parseExpression = function () {
     return this.parseAssignment();
 
 };
@@ -244,6 +245,22 @@ Parser.prototype.parseAssignment = function () {
 Parser.prototype.parseAdditive = function () {
     var token, expr;
     expr = this.parseMultiplicative();
+
+    token = this.lexer.peek();
+    while (this.matchOp(token, '+') || this.matchOp(token, '-')) {
+        this.lexer.next();
+        expr = {
+            'Binary': {
+                operator: token.value,
+                left: expr,
+                right: this.parseMultiplicative()
+            }
+        };
+
+        token = this.lexer.peek();
+    }
+
+
     return expr;
 
 };
@@ -251,25 +268,68 @@ Parser.prototype.parseAdditive = function () {
 Parser.prototype.parseMultiplicative = function () {
     var token, expr;
     expr = this.parseUnary();
+
+    token = this.lexer.peek();
+    while (this.matchOp(token, '*') || this.matchOp(token, '/')) {
+        this.lexer.next();
+        expr = {
+            'Binary': {
+                operator: token.value,
+                left: expr,
+                right: this.parseUnary()
+            }
+        };
+
+        token = this.lexer.peek();
+    }
     return expr;
 
 };
 
 Parser.prototype.parseUnary = function () {
     var token, expr;
-    expr = this.parsePrimary();
-    return expr;
+    token = this.lexer.peek();
+
+    if (this.matchOp(token, '-') || this.matchOp(token, '+')) {
+        this.lexer.next();
+        expr = this.parseUnary();
+        return {
+            'Unary': {
+                opeartor: token.value,
+                expression: expr
+            }
+        }
+    }
+    return this.parsePrimary();
 };
 
 Parser.prototype.parsePrimary = function () {
     var token, expr;
     token = this.lexer.peek();
+    this.lexer.next();
+    if (token.type === T.Identifier) {
+        return {
+            'Identifier': token.value
+        }
+    }
 
     if (token.type === T.Number) {
-        token = this.lexer.peek();
         return {
-            'Number':token.value
+            'Number': token.value
         };
+    }
+
+    if (this.matchOp(token, '(')) {
+        expr = this.parseAssignment();
+        token = this.lexer.peek();
+        this.lexer.next();
+        if (!this.matchOp(token, ')')) {
+            throw new SyntaxError('Oczekiwano )');
+        }
+
+        return {
+            'Expression': expr
+        }
     }
 
     return expr;
@@ -282,3 +342,65 @@ Parser.prototype.parseFunctionCall = function () {
 Parser.prototype.parseArgumentList = function () {
     var token, expr;
 };
+
+
+function Evaluator() {
+
+}
+
+Evaluator.prototype.evaluate = function (expr) {
+
+    this.parser = new Parser();
+    var tree = this.parser.parse(expr);
+    return this.exec(tree);
+}
+
+Evaluator.prototype.exec = function (node) {
+
+    var expr;
+
+    if (node.hasOwnProperty('Expression')) {
+        return this.exec(node.Expression);
+    }
+    if (node.hasOwnProperty('Number')) {
+        return parseFloat(node.Number);
+    }
+
+    if (node.hasOwnProperty('Unary')) {
+
+        var t = node.Unary;
+        expr = this.exec(t.expression);
+
+        switch (t.operator) {
+            case '+':
+                return expr;
+            case '-':
+                return -expr;
+            default:
+                throw new SyntaxError('Unknown operator');
+        }
+    }
+
+
+    if (node.hasOwnProperty('Binary')) {
+
+        var t = node.Binary;
+        var left = this.exec(t.left);
+        var right = this.exec(t.right);
+
+        switch (t.operator) {
+            case '+':
+                return left + right;
+            case '-':
+                return left - right;
+            case '*':
+                return left * right;
+            case '/':
+                return left / right;
+            default:
+                throw new SyntaxError('Unknown operator ' + t.operator);
+        }
+    }
+
+
+}
