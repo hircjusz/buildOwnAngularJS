@@ -412,10 +412,13 @@ function Evaluator() {
 
     this.context= {
         Constants: {
-            
+            pi: 3.14159265,
+            phi:1.61803
         },
         Functions: {
-            abs:Math.abs
+            abs: Math.abs,
+            sqrt: Math.sqrt,
+            sin:Math.sin
         },
         Variables: {}
     }

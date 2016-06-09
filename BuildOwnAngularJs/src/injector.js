@@ -1,10 +1,11 @@
 ﻿/// <reference path="../lib/loodash.js" />
+/// <reference path="../src/hash_map.js" />
 'use strict';
 
 
 function createInjector(modulesToLoad, strictDI) {
     var cache = {};
-    var loadedModules = {};
+    var loadedModules = new HashMap();
     var providerCache = {};
     var instanceCache = {};
     var strictDi = (strictDI === true);
@@ -143,8 +144,8 @@ function createInjector(modulesToLoad, strictDI) {
 
     _.forEach(modulesToLoad, function loadModule(module) {
         if (_.isString(module)) {
-            if (!loadedModules.hasOwnProperty(module)) {
-                loadedModules[module] = true;
+            if (!loadedModules.get(module)) {
+                loadedModules.put(module,true);
                 module = window.angular.module(module);
                 _.forEach(module.requires, loadModule);
                 runInvokeQueue(module._invokeQueue);

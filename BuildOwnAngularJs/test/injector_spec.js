@@ -1,6 +1,7 @@
 ﻿/// <reference path="../Scripts/jasmine.js" />
 /// <reference path="../lib/loodash.js" />
 /// <reference path="../src/loader.js" />
+/// <reference path="../src/hash_map.js" />
 /// <reference path="../src/injector.js" />
 'use strict';
 
