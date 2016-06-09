@@ -64,7 +64,7 @@ Scanner.prototype.skipSpaces = function () {
 
 Scanner.prototype.scanOperator = function () {
     var ch = this.peekNextChar();
-    if ('+-*/(),'.indexOf(ch) >= 0) {
+    if ('+-*/(),='.indexOf(ch) >= 0) {
         return this.createToken('Operator', this.getNextChar());
     }
     return undefined;
@@ -240,6 +240,21 @@ Parser.prototype.parseExpression = function () {
 Parser.prototype.parseAssignment = function () {
     var token, expr;
     expr = this.parseAdditive();
+
+    if (typeof expr !== 'undefined' && expr.Identifier) {
+        token = this.lexer.peek();
+        if (this.matchOp(token, '=')) {
+            this.lexer.next();
+            return {
+                'Assignment': {
+                    name: expr,
+                    value: this.parseAssignment()
+        }
+            }
+
+        }
+    }
+
     return expr;
 };
 
@@ -296,7 +311,7 @@ Parser.prototype.parseUnary = function () {
         expr = this.parseUnary();
         return {
             'Unary': {
-                opeartor: token.value,
+                operator: token.value,
                 expression: expr
             }
         }
@@ -310,7 +325,7 @@ Parser.prototype.parsePrimary = function () {
 
     if (token.type === T.Identifier){
         var name = token.value;
-        token = this.lexer.next();
+        token=this.lexer.next();
         if (this.matchOp(token, '(')) {
             return this.parseFunctionCall(name);
         }
@@ -395,7 +410,18 @@ Parser.prototype.parseArgumentList = function () {
 
 function Evaluator() {
 
+    this.context= {
+        Constants: {
+            
+        },
+        Functions: {
+            abs:Math.abs
+        },
+        Variables: {}
+    }
 }
+
+
 
 Evaluator.prototype.evaluate = function (expr) {
 
@@ -448,6 +474,38 @@ Evaluator.prototype.exec = function (node) {
                 return left / right;
             default:
                 throw new SyntaxError('Unknown operator ' + t.operator);
+        }
+    }
+
+    if (node.hasOwnProperty('Identifier')) {
+
+        if (this.context.Variables.hasOwnProperty(node.Identifier)) {
+            return this.context.Variables[node.Identifier];
+        }
+
+        if (this.context.Constants.hasOwnProperty(node.Identifier)) {
+            return this.context.Constants[node.Identifier];
+        }
+
+        throw new SyntaxError('Unknown Identifier');
+    }
+
+    if (node.hasOwnProperty('Assignment')) {
+
+        var  right = this.exec(node.Assignment.value);
+        this.context.Variables[node.Assignment.name.Identifier] = right;
+        return right;
+    }
+
+    if (node.hasOwnProperty('FunctionCall')) {
+        expr = node.FunctionCall;
+        if (this.context.Functions.hasOwnProperty(expr.name)) {
+            var args = [];
+            for (var i = 0; i < expr.args.length; i++) {
+                args.push(this.exec(expr.args[i]));
+            }
+
+            return this.context.Functions[expr.name].apply(null,args);
         }
     }
 

@@ -272,6 +272,16 @@ describe("Yet another parser", function () {
 
         });
 
+        it("function parse Assignment", function () {
+
+            var parser = new Parser();
+
+
+            var expr = parser.parse('a=5*6');
+
+
+        });
+
         it("function simple Evaluator", function() {
 
             var evaluator = new Evaluator();
@@ -288,6 +298,17 @@ describe("Yet another parser", function () {
              expr = parser.parse('afun(2,bfun(6))');
 
            
+        });
+
+        it("function parse Assignment identifier", function () {
+
+            var parser = new Parser();
+
+
+            var evaluator = new Evaluator();
+            var value = evaluator.evaluate("abs(-5*6)");
+
+
         });
 
     });
