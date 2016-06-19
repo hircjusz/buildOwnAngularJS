@@ -28,6 +28,7 @@
             constant: invokeLater('$provide','constant', 'unshift'),
             provider: invokeLater('$provide', 'provider'),
             factory: invokeLater('$provide', 'factory'),
+            filter: invokeLater('$filterProvider', 'register'),
             value: invokeLater('$provide', 'value'),
             service: invokeLater('$provide', 'service'),
             decorator: invokeLater('$provide', 'decorator'),
