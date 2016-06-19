@@ -3,6 +3,7 @@
 /// <reference path="../src/filter.js" />
 /// <reference path="../src/injector.js" />
 /// <reference path="../src/parse.js" />
+/// <reference path="../src/scope.js" />
 /// <reference path="../src/loader.js" />
 
 
@@ -12,5 +13,6 @@ function publishExternalAPI() {
 
     ngModule.provider('$filter', $FilterProvider);
     ngModule.provider('$parse', $ParseProvider);
+    ngModule.provider('$rootScope', $RootScopeProvider);
 }
 
