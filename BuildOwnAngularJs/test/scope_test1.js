@@ -4,21 +4,20 @@
 
 /// <reference path="../src/parse.js" />
 /// <reference path="../src/filter.js" />
-
+/// <reference path="../src/loader.js" />
+/// <reference path="../src/injector.js" />
+/// <reference path="../src/anguar_public.js" />
 
 
 describe("Scope", function () {
 
-    it("can be constructed and used as an object", function () {
-        var scope = new Scope();
-        scope.aProperty = 1;
-        expect(scope.aProperty).toBe(1);
-    });
+   
 
     describe("digest", function () {
         var scope;
         beforeEach(function () {
-            scope = new Scope();
+            publishExternalAPI();
+            scope = createInjector(['ng']).get('$rootScope');
         });
         it("calls the listener function of a watch on first $digest", function () {
             var watchFn = function () { return 'wat'; };
@@ -30,7 +29,7 @@ describe("Scope", function () {
 
 
         it("calls the listener function when the watched value changes", function () {
-            var scope = new Scope();
+            ////var scope = new Scope();
             scope.someValue = 'a';
             scope.counter = 0;
             scope.$watch(
@@ -550,7 +549,8 @@ function (scope) {
     describe('$watchGroup', function () {
         var scope;
         beforeEach(function () {
-            scope = new Scope();
+            publishExternalAPI();
+            scope = createInjector(['ng']).get('$rootScope');
         });
 
         it('takes watches as an array and calls listener with arrays', function () {
@@ -662,7 +662,8 @@ function (scope) {
         var scope;
 
         beforeEach(function () {
-            scope = new Scope();
+            publishExternalAPI();
+            scope = createInjector(['ng']).get('$rootScope');
         });
 
 
@@ -958,7 +959,8 @@ function (scope) {
     describe("$watchCollection", function () {
         var scope;
         beforeEach(function () {
-            scope = new Scope();
+            publishExternalAPI();
+            scope = createInjector(['ng']).get('$rootScope');
         });
 
         it("works like a normal watch for non-collections", function () {
@@ -1301,7 +1303,8 @@ function (scope) {
         var isolatedChild;
 
         beforeEach(function () {
-            parent = new Scope();
+            publishExternalAPI();
+            parent = createInjector(['ng']).get('$rootScope');
             scope = parent.$new();
             child = scope.$new();
             isolatedChild = scope.$new(true);
