@@ -5,6 +5,7 @@
 /// <reference path="../src/loader.js" />
 /// <reference path="../src/parse.js" />
 /// <reference path="../src/scope.js" />
+/// <reference path="../src/q.js" />
 /// <reference path="../src/anguar_public.js" />
 
 
@@ -195,5 +196,13 @@ describe('angularPublic', function () {
         var injector = createInjector(['ng']);
         expect(injector.has('$rootScope')).toBe(true);
     });
+
+
+    it('sets up $q', function () {
+        publishExternalAPI();
+        var injector = createInjector(['ng']);
+        expect(injector.has('$q')).toBe(true);
+    });
+
 
 });

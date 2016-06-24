@@ -5,6 +5,7 @@
 /// <reference path="../src/parse.js" />
 /// <reference path="../src/scope.js" />
 /// <reference path="../src/loader.js" />
+/// <reference path="../src/q.js" />
 
 
 function publishExternalAPI() {
@@ -14,5 +15,6 @@ function publishExternalAPI() {
     ngModule.provider('$filter', $FilterProvider);
     ngModule.provider('$parse', $ParseProvider);
     ngModule.provider('$rootScope', $RootScopeProvider);
+    ngModule.provider('$q', $QProvider);
 }
 

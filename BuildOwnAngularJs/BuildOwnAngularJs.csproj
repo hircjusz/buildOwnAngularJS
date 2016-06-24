@@ -68,11 +68,13 @@
     <Content Include="src\injector.js" />
     <Content Include="src\loader.js" />
     <Content Include="src\parse.js" />
+    <Content Include="src\q.js" />
     <Content Include="src\scope.js" />
     <Content Include="test\angular_public_spec.js" />
     <Content Include="test\hash_map_spec.js" />
     <Content Include="test\injector_spec.js" />
     <Content Include="test\loader_spec.js" />
+    <Content Include="test\q_spec.js" />
     <Content Include="utility\yet_another_parser_test.js" />
     <Content Include="utility\yet_another_parser.js" />
     <Content Include="test\filter_spec.js" />
