@@ -32,6 +32,7 @@
             value: invokeLater('$provide', 'value'),
             service: invokeLater('$provide', 'service'),
             decorator: invokeLater('$provide', 'decorator'),
+            directive:invokeLater('$compileProvider','directive'),
             config:invokeLater('$injector','invoke','push',configBlocks),
             _invokeQueue: invokeQueue,
             run: function(fn) {

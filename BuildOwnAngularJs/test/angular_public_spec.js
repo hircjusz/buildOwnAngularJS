@@ -7,6 +7,7 @@
 /// <reference path="../src/scope.js" />
 /// <reference path="../src/q.js" />
 /// <reference path="../src/anguar_public.js" />
+/// <reference path="../src/compiler.js" />
 
 
 'use strict';
@@ -204,5 +205,11 @@ describe('angularPublic', function () {
         expect(injector.has('$q')).toBe(true);
     });
 
+
+    it('sets up $compile', function () {
+        publishExternalAPI();
+        var injector = createInjector(['ng']);
+        expect(injector.has('$compile')).toBe(true);
+    });
 
 });

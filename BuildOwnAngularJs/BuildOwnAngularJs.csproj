@@ -63,6 +63,7 @@
     <Content Include="Scripts\jasmine-html.js" />
     <Content Include="Scripts\jasmine.js" />
     <Content Include="src\anguar_public.js" />
+    <Content Include="src\compiler.js" />
     <Content Include="src\filter.js" />
     <Content Include="src\hash_map.js" />
     <Content Include="src\injector.js" />
@@ -71,6 +72,7 @@
     <Content Include="src\q.js" />
     <Content Include="src\scope.js" />
     <Content Include="test\angular_public_spec.js" />
+    <Content Include="test\compile_spec.js" />
     <Content Include="test\hash_map_spec.js" />
     <Content Include="test\injector_spec.js" />
     <Content Include="test\loader_spec.js" />

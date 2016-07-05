@@ -36,6 +36,10 @@ function $QProvider() {
                 }
             };
             
+            Promise.prototype.catch = function (onRejected) {
+                return this.then(null, onRejected);
+            };
+
             Deferred.prototype.resolve = function(value) {
                 if (this.promise.$$state.status) {
                     return;
