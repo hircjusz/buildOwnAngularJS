@@ -12,3 +12,9 @@ C:\DATA\SOURCES\GitHub\buildYourOwnAngularJS\BuildOwnAngularJs\bin\BuildOwnAngul
 C:\DATA\SOURCES\GitHub\buildYourOwnAngularJS\BuildOwnAngularJs\obj\Debug\BuildOwnAngularJs.dll
 C:\DATA\SOURCES\GitHub\buildYourOwnAngularJS\BuildOwnAngularJs\obj\Debug\BuildOwnAngularJs.pdb
 C:\DATA\SOURCES\GitHub\buildYourOwnAngularJS\BuildOwnAngularJs\obj\Debug\BuildOwnAngularJs.csprojResolveAssemblyReference.cache
+D:\SOURCES\GITHUB\buildYourOwnAngularJS\BuildOwnAngularJs\bin\BuildOwnAngularJs.dll.config
+D:\SOURCES\GITHUB\buildYourOwnAngularJS\BuildOwnAngularJs\bin\BuildOwnAngularJs.dll
+D:\SOURCES\GITHUB\buildYourOwnAngularJS\BuildOwnAngularJs\bin\BuildOwnAngularJs.pdb
+D:\SOURCES\GITHUB\buildYourOwnAngularJS\BuildOwnAngularJs\obj\Debug\BuildOwnAngularJs.csprojResolveAssemblyReference.cache
+D:\SOURCES\GITHUB\buildYourOwnAngularJS\BuildOwnAngularJs\obj\Debug\BuildOwnAngularJs.dll
+D:\SOURCES\GITHUB\buildYourOwnAngularJS\BuildOwnAngularJs\obj\Debug\BuildOwnAngularJs.pdb
